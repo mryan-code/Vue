@@ -496,7 +496,7 @@ jobs:
           fi
           echo "Launching server process."
           # High-risk operation: start the server in the background while keeping logs for startup failures.
-          nohup npm run start > deploy-start.log 2>&1 &
+          nohup npm run background > deploy-start.log 2>&1 &
           server_pid="$!"
           echo "Server process started with PID ${server_pid}."
 
