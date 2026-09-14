@@ -38,7 +38,8 @@ const router = createRouter({
 	routes: pages,
 });
 
-router.beforeEach(async (to, from, next) => {
+// Vue Router no longer uses the next() callback; returning a location or nothing replaces it.
+router.beforeEach(async (to, from) => {
 	const appStore = useAppStore();
 	await appStore.testLogin();
 
@@ -95,25 +96,25 @@ router.beforeEach(async (to, from, next) => {
 				}
 				if (appStore.authenticated == false && !publicPages.includes(toPath)) {
 					if (to.path !== "/login") {
-						next({ path: "/login" });
-						return false;
+						// deprecated: next({ path: "/login" });
+						return { path: "/login" };
 					}
-					next();
-					return true;
+					// deprecated: next();
+					return;
 				}
 				if (appStore.authenticated == true && !protectedPages.includes(toPath)) {
 					if (to.path !== "/") {
-						next({ path: "/" });
-						return false;
+						// deprecated: next({ path: "/" });
+						return { path: "/" };
 					}
-					next();
-					return true;
+					// deprecated: next();
+					return;
 				}
 			}
 		}
 	}
 
-	next();
+	// deprecated: next();
 });
 
 // router.afterEach((to, from) => {

@@ -15,7 +15,10 @@
 		"resolveJsonModule": true,
 		"types": ["vite/client", "node"],
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			// @lucide/vue lists types as "typings" with no "exports"; bundler resolution
+			// otherwise binds to dist/cjs/lucide-vue.js and raises TS7016.
+			"@lucide/vue": ["./node_modules/@lucide/vue/dist/lucide-vue.d.ts"]
 		},
 		"lib": ["esnext", "dom", "dom.iterable", "scripthost"]
 	},
