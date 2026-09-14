@@ -11,15 +11,23 @@ interface PageRouteDefinition {
 	props?: boolean;
 }
 
+// Vite only bundles dynamic imports that match a glob; string concatenation is not analyzed.
+const viewModules = import.meta.glob("../views/*.vue");
+
 // JSON route definitions store view paths as strings; Vue Router needs lazy import functions.
 function toRouteRecord(page: PageRouteDefinition): RouteRecordRaw {
 	const viewFile = page.component.replace(/^\.\.\/views\//, "").replace(/^@\/views\//, "");
+	const modulePath = `../views/${viewFile}`;
+	const component = viewModules[modulePath];
+	if (!component) {
+		throw new Error(`Unknown view module "${modulePath}".`);
+	}
 	return {
 		path: page.path,
 		name: page.name,
 		meta: page.meta,
 		props: page.props,
-		component: () => import("@/views/" + viewFile),
+		component: component,
 	};
 }
 

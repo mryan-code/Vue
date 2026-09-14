@@ -160,8 +160,10 @@ jobs:
           get_app_pids() {
             ps -eo pid,args | awk -v deploy_path="$deploy_path" '
               index($0, deploy_path) && /vue-cli-service(\.js)?[[:space:]]+serve/ && !/awk/ { print $1; next }
+              index($0, deploy_path) && /vite(\.js)?([[:space:]]|$)/ && !/vitest/ && !/awk/ { print $1; next }
               index($0, deploy_path) && /npm([[:space:]]+run)?[[:space:]]+start/ && !/awk/ { print $1; next }
               index($0, deploy_path) && /node([[:space:]]+.*)?vue-cli-service(\.js)?[[:space:]]+serve/ && !/awk/ { print $1; next }
+              index($0, deploy_path) && /node([[:space:]]+.*)?vite(\.js)?/ && !/vitest/ && !/awk/ { print $1; next }
               # Keep stop scope limited to UI deploy path to avoid killing unrelated services that may auto-restart.
             ' | sort -u || true
           }
@@ -387,7 +389,7 @@ jobs:
         run: |
           set -euo pipefail
           deploy_path="${DEPLOY_PATH%/}"
-          echo "Clearing remote frontend build artifacts and webpack cache."
+          echo "Clearing remote frontend build artifacts and Vite cache."
           # High-risk operation: this removes remote generated assets so the next build picks up current env values.
           ssh \
             $SSH_KEEPALIVE_OPTIONS \
@@ -398,7 +400,7 @@ jobs:
             -o BatchMode=yes \
             -o PasswordAuthentication=no \
             "$DEPLOY_USERNAME@$DEPLOY_HOST" \
-            "bash -lc 'cd ${deploy_path} && rm -rf dist node_modules/.cache && echo Remote frontend caches cleared.'"
+            "bash -lc 'cd ${deploy_path} && rm -rf dist node_modules/.cache node_modules/.vite && echo Remote frontend caches cleared.'"
 
       - name: NPM install
         run: |
@@ -480,8 +482,10 @@ jobs:
           npm run stop || true
           _leftover_pids="$(ps -eo pid,args | awk -v deploy_path="$deploy_path" '
             index($0, deploy_path) && /vue-cli-service(\.js)?[[:space:]]+serve/ && !/awk/ { print $1; next }
+            index($0, deploy_path) && /vite(\.js)?([[:space:]]|$)/ && !/vitest/ && !/awk/ { print $1; next }
             index($0, deploy_path) && /npm([[:space:]]+run)?[[:space:]]+start/ && !/awk/ { print $1; next }
             index($0, deploy_path) && /node([[:space:]]+.*)?vue-cli-service(\.js)?[[:space:]]+serve/ && !/awk/ { print $1; next }
+            index($0, deploy_path) && /node([[:space:]]+.*)?vite(\.js)?/ && !/vitest/ && !/awk/ { print $1; next }
             # Keep stop scope limited to UI deploy path to avoid killing unrelated services that may auto-restart.
           ' | sort -u || true)"
           if [ -n "$_leftover_pids" ]; then
@@ -509,7 +513,7 @@ jobs:
           }
 
           has_started_log() {
-            [ -f "deploy-start.log" ] && grep -Eq "App running at|Web server running\." deploy-start.log
+            [ -f "deploy-start.log" ] && grep -Eq "App running at|Web server running\.|Local:|ready in" deploy-start.log
           }
 
           for attempt in $(seq 1 300); do

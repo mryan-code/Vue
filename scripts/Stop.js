@@ -59,11 +59,15 @@ function getDescendantPids(rootPid, processTable) {
 
 const processTable = parseProcessTable();
 const matchingProcesses = processTable.filter((processInfo) => {
+	// Match both the current Vite dev server and leftover Vue CLI processes during the deploy cutover.
 	return (
 		processInfo.command.includes(projectRoot) &&
-		processInfo.command.includes("vue-cli-service") &&
-		processInfo.command.includes("serve") &&
-		!processInfo.command.includes("scripts/Stop.js")
+		!processInfo.command.includes("scripts/Stop.js") &&
+		!processInfo.command.includes("vitest") &&
+		(processInfo.command.includes("vue-cli-service") ||
+			/\svite(\.js)?(\s|$)/.test(processInfo.command) ||
+			processInfo.command.includes("vite/bin/vite") ||
+			processInfo.command.includes("node_modules/vite"))
 	);
 });
 

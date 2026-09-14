@@ -1,5 +1,6 @@
 /* eslint-env node */
 /* eslint-disable @typescript-eslint/no-var-requires */
+// Deprecated: this Vue CLI webpack config is unused. Dev/build now run through vite.config.ts.
 const { defineConfig } = require("@vue/cli-service");
 const path = require("path");
 const webpack = require("webpack");
