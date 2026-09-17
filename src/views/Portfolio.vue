@@ -172,7 +172,7 @@ const displayPicturePuzzle = async () => {
 		piece.y = pieceY;
 
 		//if is a last column, add a new row
-		if (pieceX + (piece.width as number) > picturePuzzleImageWidth.value) {
+		if (pieceX + (piece.width as number) == canvasWidth) {
 			pieceX = 0;
 			pieceY += piece.height as number;
 		} else {
