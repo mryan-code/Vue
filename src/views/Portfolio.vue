@@ -27,11 +27,12 @@ const displayPicturePuzzle = async () => {
 		return array;
 	};
 	let imageTemp: types.KeyValue | null = picturePuzzleImageOptions.value[picturePuzzleImageOption.value - 1];
-	console.log("displayPicturePuzzle: imageTemp: ", JSON.parse(JSON.stringify(imageTemp)));
+
 	picturePuzzleGrid.value = [];
 	if (!imageTemp) {
 		return;
 	}
+	console.log("displayPicturePuzzle: imageTemp: ", JSON.parse(JSON.stringify(imageTemp)));
 
 	const sourceMimeType =
 		typeof imageTemp.mime_type === "string" && imageTemp.mime_type ? imageTemp.mime_type : "image/png";
