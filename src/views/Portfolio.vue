@@ -317,24 +317,22 @@ onBeforeUnmount(() => {});
 						v-model="picturePuzzleGrid"
 						item-key="piece_id"
 					>
-						<transition-group>
+						<template #item="{ element }">
 							<div
 								class="picturePuzzleGridItem"
-								v-for="image in picturePuzzleGrid as types.KeyValue[]"
-								:key="image.piece_id as number"
 								:style="{
-									left: (image.x as number) + 'px',
-									top: (image.y as number) + 'px',
+									left: (element.x as number) + 'px',
+									top: (element.y as number) + 'px',
 								}"
 							>
 								<img
-									:src="`data:${image.mime_type as string};base64,${image.blob as string}`"
-									:alt="`Puzzle piece ${image.piece_id as number}`"
-									:width="image.width as number"
-									:height="image.height as number"
+									:src="`data:${element.mime_type as string};base64,${element.blob as string}`"
+									:alt="`Puzzle piece ${element.piece_id as number}`"
+									:width="element.width as number"
+									:height="element.height as number"
 								/>
 							</div>
-						</transition-group>
+						</template>
 					</draggable>
 				</div>
 			</div>
