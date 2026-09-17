@@ -5,6 +5,7 @@ import { useAppStore } from "@/store/app";
 import * as types from "@/types";
 import { SquarePen, Trash, Copy, Mic, MicOff, Cog, Loader } from "@lucide/vue";
 import moment from "moment-timezone";
+import { createCanvas, loadImage } from "canvas";
 
 const API = new APIClass();
 const appStore = useAppStore();
@@ -13,13 +14,78 @@ const picturePuzzleGridSize = ref(3);
 const picturePuzzleGridSizeOptions = [3, 6, 9];
 const picturePuzzleImageOption = ref(1);
 const picturePuzzleImageOptions = ref<types.KeyValue[]>([]);
-const picturePuzzleGrid = ref<types.KeyValue | null>(null);
+const picturePuzzleGrid = ref<types.KeyValue[]>([]);
 
 const picturePuzzleImage = ref<File | null>(null);
 
 const displayPicturePuzzle = async () => {
-	let image = picturePuzzleImageOptions.value[picturePuzzleImageOption.value];
-	console.log("displayPicturePuzzle: image: ", JSON.parse(JSON.stringify(image)));
+	let imageTemp: types.KeyValue | null = picturePuzzleImageOptions.value[picturePuzzleImageOption.value];
+	if (imageTemp) {
+		console.log("displayPicturePuzzle: imageTemp: ", JSON.parse(JSON.stringify(imageTemp)));
+	}
+	picturePuzzleGrid.value = [];
+	if (!imageTemp) {
+		return;
+	}
+
+	const sourceMimeType =
+		typeof imageTemp.mime_type === "string" && imageTemp.mime_type ? imageTemp.mime_type : "image/png";
+	// node-canvas toDataURL only accepts png/jpeg, so map other source types to png.
+	const mimeType: "image/png" | "image/jpeg" =
+		sourceMimeType === "image/jpeg" || sourceMimeType === "image/jpg" ? "image/jpeg" : "image/png";
+	const sourceBlob64 =
+		typeof imageTemp.blob64 === "string"
+			? imageTemp.blob64
+			: typeof imageTemp.base64 === "string"
+				? imageTemp.base64
+				: "";
+	if (!sourceBlob64) {
+		return;
+	}
+
+	const gridSize = Number(picturePuzzleGridSize.value);
+	if (!gridSize || gridSize < 1) {
+		return;
+	}
+
+	// Slice imageTemp into an equal gridSize x gridSize grid with node-canvas, then store each tile as base64.
+	const sourceSrc = sourceBlob64.startsWith("data:") ? sourceBlob64 : `data:${sourceMimeType};base64,${sourceBlob64}`;
+	const sourceImage = await loadImage(sourceSrc);
+	const pieceWidth = sourceImage.width / gridSize;
+	const pieceHeight = sourceImage.height / gridSize;
+	const canvasWidth = Math.max(1, Math.round(pieceWidth));
+	const canvasHeight = Math.max(1, Math.round(pieceHeight));
+	const pieces: types.KeyValue[] = [];
+	let pieceId = 0;
+	for (let row = 0; row < gridSize; row++) {
+		for (let col = 0; col < gridSize; col++) {
+			const canvas = createCanvas(canvasWidth, canvasHeight);
+			const ctx = canvas.getContext("2d");
+			ctx.drawImage(
+				sourceImage,
+				col * pieceWidth,
+				row * pieceHeight,
+				pieceWidth,
+				pieceHeight,
+				0,
+				0,
+				canvasWidth,
+				canvasHeight,
+			);
+			const dataUrl = mimeType === "image/jpeg" ? canvas.toDataURL("image/jpeg") : canvas.toDataURL("image/png");
+			const blob64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+			pieces.push({
+				piece_id: pieceId,
+				mime_type: mimeType,
+				blob64: blob64,
+			});
+			pieceId++;
+		}
+	}
+	picturePuzzleGrid.value = pieces;
+	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+		console.log("displayPicturePuzzle: picturePuzzleGrid: ", JSON.parse(JSON.stringify(picturePuzzleGrid.value)));
+	}
 };
 const selectPicturePuzzleImage = async (event: Event) => {
 	event.preventDefault();
@@ -129,23 +195,15 @@ onBeforeUnmount(() => {});
 							</button>
 						</div>
 					</div>
-					<div
-						class="picturePuzzleGrid"
-						v-if="
-							picturePuzzleGrid &&
-							picturePuzzleGrid.success == true &&
-							picturePuzzleGrid.results &&
-							Array.isArray(picturePuzzleGrid.results)
-						"
-					>
+					<div class="picturePuzzleGrid" v-if="picturePuzzleGrid.length > 0">
 						<div
 							class="picturePuzzleGridItem"
-							v-for="image in picturePuzzleGrid.results as types.KeyValue[]"
-							:key="image.picture_puzzle_image_id as string"
+							v-for="image in picturePuzzleGrid as types.KeyValue[]"
+							:key="image.piece_id as number"
 						>
 							<img
-								:src="image.picture_puzzle_image_url as string"
-								:alt="image.picture_puzzle_image_name as string"
+								:src="`data:${image.mime_type as string};base64,${image.blob64 as string}`"
+								:alt="`Puzzle piece ${image.piece_id as number}`"
 							/>
 						</div>
 					</div>
