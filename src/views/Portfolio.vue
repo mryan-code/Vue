@@ -180,7 +180,7 @@ const displayPicturePuzzle = async () => {
 			"canvasWidth: ",
 			canvasWidth * picturePuzzleGridSize.value,
 		);
-		if (pieceX == canvasWidth * picturePuzzleGridSize.value) {
+		if (pieceX + (piece.width as number) == canvasWidth * picturePuzzleGridSize.value) {
 			pieceX = 0;
 			pieceY += piece.height as number;
 		} else {
