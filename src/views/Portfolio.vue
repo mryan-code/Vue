@@ -45,32 +45,13 @@ const displayPicturePuzzle = async () => {
 		sourceMimeType === "image/jpeg" || sourceMimeType === "image/jpg" ? "image/jpeg" : "image/png";
 	// canvas loadImage sets <img>.src; raw base64 is not a valid src, so wrap it as a data URL.
 	let imageSrc = sourceBlob;
-	if (
-		!sourceBlob.startsWith("data:") &&
-		!sourceBlob.startsWith("blob:") &&
-		!sourceBlob.startsWith("http://") &&
-		!sourceBlob.startsWith("https://")
-	) {
-		const cleanedBlob = sourceBlob.replace(/\s/g, "");
-		let loadMimeType = sourceMimeType;
-		if (cleanedBlob.startsWith("iVBOR")) {
-			loadMimeType = "image/png";
-		} else if (cleanedBlob.startsWith("/9j/")) {
-			loadMimeType = "image/jpeg";
-		} else if (cleanedBlob.startsWith("R0lGOD")) {
-			loadMimeType = "image/gif";
-		} else if (cleanedBlob.startsWith("UklGR")) {
-			loadMimeType = "image/webp";
-		}
-		imageSrc = `data:${loadMimeType};base64,${cleanedBlob}`;
-	}
 	const sourceImage = await loadImage(imageSrc);
 	const pieceWidth = sourceImage.width / picturePuzzleGridSize.value;
 	const pieceHeight = sourceImage.height / picturePuzzleGridSize.value;
 	const canvasWidth = Math.max(1, Math.round(pieceWidth));
 	const canvasHeight = Math.max(1, Math.round(pieceHeight));
 	const pieces: types.KeyValue[] = [];
-	let pieceId = 0;
+	let pieceId = 1;
 	for (let row = 0; row < picturePuzzleGridSize.value; row++) {
 		for (let col = 0; col < picturePuzzleGridSize.value; col++) {
 			const canvas = createCanvas(canvasWidth, canvasHeight);
