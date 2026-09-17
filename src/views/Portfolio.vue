@@ -5,6 +5,7 @@ import { useAppStore } from "@/store/app";
 import * as types from "@/types";
 import { SquarePen, Trash, Copy, Mic, MicOff, Cog, Loader } from "@lucide/vue";
 import moment from "moment-timezone";
+import draggable from "vuedraggable";
 // Deprecated: node-canvas is a Node native binding. Puzzle tiles are sliced with the browser HTML5 canvas instead.
 // import { createCanvas, loadImage } from "canvas";
 
@@ -319,24 +320,26 @@ onBeforeUnmount(() => {});
 						aria-hidden="true"
 						style="display: none"
 					></canvas>
-					<div id="picturePuzzleGrid" v-if="picturePuzzleGrid.length > 0">
-						<div
-							class="picturePuzzleGridItem"
-							v-for="image in picturePuzzleGrid as types.KeyValue[]"
-							:key="image.piece_id as number"
-							:style="{
-								left: (image.x as number) + 'px',
-								top: (image.y as number) + 'px',
-							}"
-						>
-							<img
-								:src="`data:${image.mime_type as string};base64,${image.blob as string}`"
-								:alt="`Puzzle piece ${image.piece_id as number}`"
-								:width="image.width as number"
-								:height="image.height as number"
-							/>
-						</div>
-					</div>
+					<draggable id="picturePuzzleGrid" v-if="picturePuzzleGrid.length > 0" v-model="picturePuzzleGrid">
+						<transition-group>
+							<div
+								class="picturePuzzleGridItem"
+								v-for="image in picturePuzzleGrid as types.KeyValue[]"
+								:key="image.piece_id as number"
+								:style="{
+									left: (image.x as number) + 'px',
+									top: (image.y as number) + 'px',
+								}"
+							>
+								<img
+									:src="`data:${image.mime_type as string};base64,${image.blob as string}`"
+									:alt="`Puzzle piece ${image.piece_id as number}`"
+									:width="image.width as number"
+									:height="image.height as number"
+								/>
+							</div>
+						</transition-group>
+					</draggable>
 				</div>
 			</div>
 		</div>
