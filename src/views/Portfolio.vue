@@ -172,8 +172,15 @@ const displayPicturePuzzle = async () => {
 		piece.y = pieceY;
 
 		//if is a last column, add a new row
-		console.log("displayPicturePuzzle: pieceX: ", pieceX, "pieceY: ", pieceY, "canvasWidth: ", canvasWidth);
-		if (pieceX + (piece.width as number) == canvasWidth) {
+		console.log(
+			"displayPicturePuzzle: pieceX: ",
+			pieceX,
+			"pieceY: ",
+			pieceY,
+			"canvasWidth: ",
+			canvasWidth * picturePuzzleGridSize.value,
+		);
+		if (pieceX + (piece.width as number) == canvasWidth * picturePuzzleGridSize.value) {
 			pieceX = 0;
 			pieceY += piece.height as number;
 		} else {
