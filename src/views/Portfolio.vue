@@ -13,13 +13,13 @@ const picturePuzzleGridSize = ref(3);
 const picturePuzzleGridSizeOptions = [3, 6, 9];
 const picturePuzzleImageOption = ref(1);
 const picturePuzzleImageOptions = ref<types.KeyValue[]>([]);
-const picturePuzzleGrid = ref<string[] | null>(null);
+const picturePuzzleGrid = ref<types.KeyValue | null>(null);
 
 const picturePuzzleImage = ref<File | null>(null);
 
 const displayPicturePuzzle = async () => {
-	if (picturePuzzleImage.value) {
-	}
+	let image = picturePuzzleImageOptions.value[picturePuzzleImageOption.value];
+	console.log("displayPicturePuzzle: image: ", JSON.parse(JSON.stringify(image)));
 };
 const selectPicturePuzzleImage = async (event: Event) => {
 	event.preventDefault();
@@ -54,9 +54,19 @@ const getPicturePuzzleImages = async () => {
 			JSON.parse(JSON.stringify(getPicturePuzzleImagesRes)),
 		);
 	}
+	if (
+		getPicturePuzzleImagesRes.success == true &&
+		getPicturePuzzleImagesRes.results &&
+		Array.isArray(getPicturePuzzleImagesRes.results)
+	) {
+		for (const image of getPicturePuzzleImagesRes.results as types.KeyValue[]) {
+			picturePuzzleImageOptions.value.push(image);
+		}
+	}
 };
 onMounted(async () => {
 	await getPicturePuzzleImages();
+	await displayPicturePuzzle();
 });
 
 onBeforeUnmount(() => {});
@@ -82,7 +92,7 @@ onBeforeUnmount(() => {});
 							<select
 								id="picturePuzzleGridSize"
 								v-model="picturePuzzleGridSize"
-								@change="async (event: Event) => await displayPicturePuzzle()"
+								@change="async () => await displayPicturePuzzle()"
 							>
 								<option v-for="option in picturePuzzleGridSizeOptions" :value="option">
 									{{ option }}
@@ -94,7 +104,7 @@ onBeforeUnmount(() => {});
 							<select
 								id="picturePuzzleImageOption"
 								v-model="picturePuzzleImageOption"
-								@change="async (event: Event) => await displayPicturePuzzle(event)"
+								@change="async () => await displayPicturePuzzle()"
 							>
 								<option v-for="option in picturePuzzleImageOptions" :value="option">
 									{{ option }}
@@ -119,7 +129,26 @@ onBeforeUnmount(() => {});
 							</button>
 						</div>
 					</div>
-					<div class="picturePuzzleGrid" v-if="picturePuzzleGrid"></div>
+					<div
+						class="picturePuzzleGrid"
+						v-if="
+							picturePuzzleGrid &&
+							picturePuzzleGrid.success == true &&
+							picturePuzzleGrid.results &&
+							Array.isArray(picturePuzzleGrid.results)
+						"
+					>
+						<div
+							class="picturePuzzleGridItem"
+							v-for="image in picturePuzzleGrid.results as types.KeyValue[]"
+							:key="image.picture_puzzle_image_id as string"
+						>
+							<img
+								:src="image.picture_puzzle_image_url as string"
+								:alt="image.picture_puzzle_image_name as string"
+							/>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
