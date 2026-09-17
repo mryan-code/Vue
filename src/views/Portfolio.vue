@@ -172,15 +172,6 @@ const displayPicturePuzzle = async () => {
 		piece.x = pieceX;
 		piece.y = pieceY;
 
-		//if is a last column, add a new row
-		console.log(
-			"displayPicturePuzzle: pieceX: ",
-			pieceX,
-			"pieceY: ",
-			pieceY,
-			"canvasWidth: ",
-			canvasWidth * picturePuzzleGridSize.value,
-		);
 		if (pieceX + (piece.width as number) == canvasWidth * picturePuzzleGridSize.value) {
 			pieceX = 0;
 			pieceY += piece.height as number;
@@ -191,7 +182,7 @@ const displayPicturePuzzle = async () => {
 	//debug: delete the last piece
 	pieces.pop();
 	picturePuzzleGrid.value = pieces;
-	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "foobar") {
 		console.log("displayPicturePuzzle: picturePuzzleGrid: ", JSON.parse(JSON.stringify(picturePuzzleGrid.value)));
 	}
 };
@@ -200,7 +191,7 @@ const selectPicturePuzzleImage = async (event: Event) => {
 };
 const handleFileSelect = async (event: Event) => {
 	picturePuzzleImage.value = (event.target as HTMLInputElement)?.files?.[0] || null;
-	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "foobar") {
 		console.log("handleFileSelect: picturePuzzleImage: ", picturePuzzleImage.value);
 	}
 };
@@ -213,7 +204,7 @@ const uploadPicturePuzzleImage = async (event: Event) => {
 		formData.append("file", picturePuzzleImage.value);
 	}
 	const uploadPicturePuzzleImageRes = await API.uploadPicturePuzzleImage(formData);
-	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "foobar") {
 		console.log(
 			"uploadPicturePuzzleImage: uploadPicturePuzzleImageRes: ",
 			JSON.parse(JSON.stringify(uploadPicturePuzzleImageRes)),
@@ -222,7 +213,7 @@ const uploadPicturePuzzleImage = async (event: Event) => {
 };
 const getPicturePuzzleImages = async () => {
 	const getPicturePuzzleImagesRes = await API.getPicturePuzzleImages();
-	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "foobar") {
 		console.log(
 			"getPicturePuzzleImages: getPicturePuzzleImagesRes: ",
 			JSON.parse(JSON.stringify(getPicturePuzzleImagesRes)),

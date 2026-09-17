@@ -36,7 +36,7 @@
     "vue-class-component": "^8.0.0-0",
     "vue-router": "^5.3.1",
     "vue-toastification": "^2.0.0-rc.5",
-    "vuedraggable": "^2.24.3",
+    "vuedraggable": "^4.1.0",
     "vuetify": "^4.2.1",
     "vuex": "^4.1.0",
     "ws": "^8.21.3"
