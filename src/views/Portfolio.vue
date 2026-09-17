@@ -19,10 +19,15 @@ const picturePuzzleGrid = ref<types.KeyValue[]>([]);
 const picturePuzzleImage = ref<File | null>(null);
 
 const displayPicturePuzzle = async () => {
+	const shuffleArray = (array: types.KeyValue[]) => {
+		for (let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
+		}
+		return array;
+	};
 	let imageTemp: types.KeyValue | null = picturePuzzleImageOptions.value[picturePuzzleImageOption.value];
-	if (imageTemp) {
-		console.log("displayPicturePuzzle: imageTemp: ", JSON.parse(JSON.stringify(imageTemp)));
-	}
+	console.log("displayPicturePuzzle: imageTemp: ", JSON.parse(JSON.stringify(imageTemp)));
 	picturePuzzleGrid.value = [];
 	if (!imageTemp) {
 		return;
@@ -129,6 +134,10 @@ const getPicturePuzzleImages = async () => {
 			picturePuzzleImageOptions.value.push(image);
 		}
 	}
+	console.log(
+		"getPicturePuzzleImages: picturePuzzleImageOptions: ",
+		JSON.parse(JSON.stringify(picturePuzzleImageOptions.value)),
+	);
 };
 onMounted(async () => {
 	await getPicturePuzzleImages();
