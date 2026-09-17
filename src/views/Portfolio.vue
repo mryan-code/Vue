@@ -311,7 +311,12 @@ onBeforeUnmount(() => {});
 						aria-hidden="true"
 						style="display: none"
 					></canvas>
-					<draggable id="picturePuzzleGrid" v-if="picturePuzzleGrid.length > 0" v-model="picturePuzzleGrid">
+					<draggable
+						id="picturePuzzleGrid"
+						v-if="picturePuzzleGrid.length > 0"
+						v-model="picturePuzzleGrid"
+						item-key="piece_id"
+					>
 						<transition-group>
 							<div
 								class="picturePuzzleGridItem"
