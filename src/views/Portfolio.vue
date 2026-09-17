@@ -156,6 +156,8 @@ const displayPicturePuzzle = async () => {
 				piece_id: pieceId,
 				mime_type: mimeType,
 				blob: blob,
+				width: pieceWidth,
+				height: pieceHeight,
 			});
 			pieceId++;
 		}
