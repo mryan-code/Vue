@@ -45,7 +45,9 @@ const displayPicturePuzzle = async () => {
 		sourceMimeType === "image/jpeg" || sourceMimeType === "image/jpg" ? "image/jpeg" : "image/png";
 	// canvas loadImage sets <img>.src; raw base64 is not a valid src, so wrap it as a data URL.
 	let imageSrc = sourceBlob;
+	console.log("displayPicturePuzzle: imageSrc: ", imageSrc);
 	const sourceImage = await loadImage(imageSrc);
+	console.log("displayPicturePuzzle: sourceImage: ", sourceImage);
 	const pieceWidth = sourceImage.width / picturePuzzleGridSize.value;
 	const pieceHeight = sourceImage.height / picturePuzzleGridSize.value;
 	const canvasWidth = Math.max(1, Math.round(pieceWidth));
