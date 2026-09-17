@@ -34,16 +34,37 @@ const displayPicturePuzzle = async () => {
 	}
 	console.log("displayPicturePuzzle: imageTemp: ", JSON.parse(JSON.stringify(imageTemp)));
 
+	const sourceBlob = typeof imageTemp.blob === "string" ? imageTemp.blob : "";
+	if (!sourceBlob) {
+		return;
+	}
 	const sourceMimeType =
 		typeof imageTemp.mime_type === "string" && imageTemp.mime_type ? imageTemp.mime_type : "image/png";
 	// node-canvas toDataURL only accepts png/jpeg, so map other source types to png.
 	const mimeType: "image/png" | "image/jpeg" =
 		sourceMimeType === "image/jpeg" || sourceMimeType === "image/jpg" ? "image/jpeg" : "image/png";
-	const sourceBlob = imageTemp.blob as string;
-	if (!sourceBlob) {
-		return;
+	// canvas loadImage sets <img>.src; raw base64 is not a valid src, so wrap it as a data URL.
+	let imageSrc = sourceBlob;
+	if (
+		!sourceBlob.startsWith("data:") &&
+		!sourceBlob.startsWith("blob:") &&
+		!sourceBlob.startsWith("http://") &&
+		!sourceBlob.startsWith("https://")
+	) {
+		const cleanedBlob = sourceBlob.replace(/\s/g, "");
+		let loadMimeType = sourceMimeType;
+		if (cleanedBlob.startsWith("iVBOR")) {
+			loadMimeType = "image/png";
+		} else if (cleanedBlob.startsWith("/9j/")) {
+			loadMimeType = "image/jpeg";
+		} else if (cleanedBlob.startsWith("R0lGOD")) {
+			loadMimeType = "image/gif";
+		} else if (cleanedBlob.startsWith("UklGR")) {
+			loadMimeType = "image/webp";
+		}
+		imageSrc = `data:${loadMimeType};base64,${cleanedBlob}`;
 	}
-	const sourceImage = await loadImage(sourceBlob);
+	const sourceImage = await loadImage(imageSrc);
 	const pieceWidth = sourceImage.width / picturePuzzleGridSize.value;
 	const pieceHeight = sourceImage.height / picturePuzzleGridSize.value;
 	const canvasWidth = Math.max(1, Math.round(pieceWidth));
