@@ -63,13 +63,12 @@ class API {
 						headers["Authorization"] = "Bearer " + localStorageTokenObject.user_jwt;
 					}
 				}
-				if (parameters instanceof FormData) {
-					headers["Content-Type"] = "multipart/form-data";
-				} else {
-					headers["Content-Type"] = "application/json";
-				}
 			}
-
+			if (parameters instanceof FormData) {
+				headers["Content-Type"] = "multipart/form-data";
+			} else {
+				headers["Content-Type"] = "application/json";
+			}
 			axiosConfig.headers = headers;
 
 			axiosConfig.method = method.toUpperCase();

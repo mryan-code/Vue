@@ -125,8 +125,8 @@ export const useAppStore = defineStore("auth", {
 		headerMenuType: "",
 		theme: "dark",
 		router: null,
-		loginTokenKey: process.env.VUE_APP_ENV + "_sz_login_token",
-		versionKey: process.env.VUE_APP_ENV + "_sz_version",
+		loginTokenKey: process.env.VUE_APP_ENV + "_api_login_token",
+		versionKey: process.env.VUE_APP_ENV + "_api_version",
 		API: new APIClass(),
 
 		timezoneOptions: [],
