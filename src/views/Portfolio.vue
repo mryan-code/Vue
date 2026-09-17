@@ -19,6 +19,7 @@ const picturePuzzleGrid = ref<types.KeyValue[]>([]);
 
 const picturePuzzleImage = ref<File | null>(null);
 const picturePuzzleCanvas = ref<HTMLCanvasElement | null>(null);
+const picturePuzzleImageWidth = ref(0);
 
 const base64ToBytes = (value: string): Uint8Array => {
 	const cleaned = value.replace(/\s/g, "");
@@ -103,6 +104,7 @@ const displayPicturePuzzle = async () => {
 		}
 		return array;
 	};
+	picturePuzzleImageWidth.value = document.getElementById("picturePuzzleGrid")?.clientWidth || 0;
 	let imageTemp: types.KeyValue | null = picturePuzzleImageOptions.value[picturePuzzleImageOption.value - 1];
 
 	picturePuzzleGrid.value = [];
@@ -292,7 +294,7 @@ onBeforeUnmount(() => {});
 						aria-hidden="true"
 						style="display: none"
 					></canvas>
-					<div class="picturePuzzleGrid" v-if="picturePuzzleGrid.length > 0">
+					<div id="picturePuzzleGrid" v-if="picturePuzzleGrid.length > 0">
 						<div
 							class="picturePuzzleGridItem"
 							v-for="image in picturePuzzleGrid as types.KeyValue[]"
@@ -301,6 +303,8 @@ onBeforeUnmount(() => {});
 							<img
 								:src="`data:${image.mime_type as string};base64,${image.blob as string}`"
 								:alt="`Puzzle piece ${image.piece_id as number}`"
+								:width="image.width as number"
+								:height="image.height as number"
 							/>
 						</div>
 					</div>

@@ -2575,3 +2575,14 @@ textarea {
 #promptInput {
 	max-height: 200px;
 }
+
+#picturePuzzleGrid {
+	width: 100%;
+	height: fit-content;
+	margin: 0 auto;
+}
+.picturePuzzleGridItem {
+	img {
+		display: inline-block;
+	}
+}
