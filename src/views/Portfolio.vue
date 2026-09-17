@@ -126,8 +126,8 @@ const displayPicturePuzzle = async () => {
 		return;
 	}
 	const sourceImage = await loadPuzzleImage(sourceBytes, loadMimeType);
-	const pieceWidth = sourceImage.width / picturePuzzleGridSize.value;
-	const pieceHeight = sourceImage.height / picturePuzzleGridSize.value;
+	const pieceWidth = Math.max(1, Math.round(sourceImage.width / picturePuzzleGridSize.value));
+	const pieceHeight = Math.max(1, Math.round(sourceImage.height / picturePuzzleGridSize.value));
 	const canvasWidth = Math.max(1, Math.round(pieceWidth));
 	const canvasHeight = Math.max(1, Math.round(pieceHeight));
 	canvas.width = canvasWidth;
