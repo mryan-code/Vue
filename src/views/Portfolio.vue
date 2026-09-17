@@ -39,32 +39,19 @@ const displayPicturePuzzle = async () => {
 	// node-canvas toDataURL only accepts png/jpeg, so map other source types to png.
 	const mimeType: "image/png" | "image/jpeg" =
 		sourceMimeType === "image/jpeg" || sourceMimeType === "image/jpg" ? "image/jpeg" : "image/png";
-	const sourceBlob64 =
-		typeof imageTemp.blob64 === "string"
-			? imageTemp.blob64
-			: typeof imageTemp.base64 === "string"
-				? imageTemp.base64
-				: "";
-	if (!sourceBlob64) {
+	const sourceBlob = imageTemp.blob as string;
+	if (!sourceBlob) {
 		return;
 	}
-
-	const gridSize = Number(picturePuzzleGridSize.value);
-	if (!gridSize || gridSize < 1) {
-		return;
-	}
-
-	// Slice imageTemp into an equal gridSize x gridSize grid with node-canvas, then store each tile as base64.
-	const sourceSrc = sourceBlob64.startsWith("data:") ? sourceBlob64 : `data:${sourceMimeType};base64,${sourceBlob64}`;
-	const sourceImage = await loadImage(sourceSrc);
-	const pieceWidth = sourceImage.width / gridSize;
-	const pieceHeight = sourceImage.height / gridSize;
+	const sourceImage = await loadImage(sourceBlob);
+	const pieceWidth = sourceImage.width / picturePuzzleGridSize.value;
+	const pieceHeight = sourceImage.height / picturePuzzleGridSize.value;
 	const canvasWidth = Math.max(1, Math.round(pieceWidth));
 	const canvasHeight = Math.max(1, Math.round(pieceHeight));
 	const pieces: types.KeyValue[] = [];
 	let pieceId = 0;
-	for (let row = 0; row < gridSize; row++) {
-		for (let col = 0; col < gridSize; col++) {
+	for (let row = 0; row < picturePuzzleGridSize.value; row++) {
+		for (let col = 0; col < picturePuzzleGridSize.value; col++) {
 			const canvas = createCanvas(canvasWidth, canvasHeight);
 			const ctx = canvas.getContext("2d");
 			ctx.drawImage(
@@ -79,11 +66,11 @@ const displayPicturePuzzle = async () => {
 				canvasHeight,
 			);
 			const dataUrl = mimeType === "image/jpeg" ? canvas.toDataURL("image/jpeg") : canvas.toDataURL("image/png");
-			const blob64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+			const blob = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
 			pieces.push({
 				piece_id: pieceId,
 				mime_type: mimeType,
-				blob64: blob64,
+				blob: blob,
 			});
 			pieceId++;
 		}
@@ -217,7 +204,7 @@ onBeforeUnmount(() => {});
 							:key="image.piece_id as number"
 						>
 							<img
-								:src="`data:${image.mime_type as string};base64,${image.blob64 as string}`"
+								:src="`data:${image.mime_type as string};base64,${image.blob as string}`"
 								:alt="`Puzzle piece ${image.piece_id as number}`"
 							/>
 						</div>
