@@ -61,6 +61,9 @@ class API {
 					const localStorageTokenObject = JSON.parse(localStorageToken);
 					if (localStorageTokenObject && localStorageTokenObject.user_jwt) {
 						headers["Authorization"] = "Bearer " + localStorageTokenObject.user_jwt;
+						if (parameters instanceof FormData) {
+							parameters.append("user_jwt", localStorageTokenObject.user_jwt);
+						}
 					}
 				}
 			}
