@@ -136,7 +136,7 @@ const displayPicturePuzzle = async () => {
 	if (!ctx) {
 		return;
 	}
-	const pieces: types.KeyValue[] = [];
+	let pieces: types.KeyValue[] = [];
 	let pieceId = 1;
 	for (let row = 0; row < picturePuzzleGridSize.value; row++) {
 		for (let col = 0; col < picturePuzzleGridSize.value; col++) {
@@ -162,6 +162,21 @@ const displayPicturePuzzle = async () => {
 				height: pieceHeight,
 			});
 			pieceId++;
+		}
+	}
+	pieces = shuffleArray(pieces);
+	let pieceY = 0;
+	let pieceX = 0;
+	for await (const piece of pieces) {
+		piece.x = pieceX;
+		piece.y = pieceY;
+
+		//if is a last column, add a new row
+		if (pieceX + (piece.width as number) > picturePuzzleImageWidth.value) {
+			pieceX = 0;
+			pieceY += piece.height as number;
+		} else {
+			pieceX += piece.width as number;
 		}
 	}
 	picturePuzzleGrid.value = pieces;
