@@ -59,11 +59,7 @@ const puzzleImageBytes = (blobValue: unknown): Uint8Array | null => {
 			return null;
 		}
 		bytes = base64ToBytes(raw);
-	} else if (
-		blobValue &&
-		typeof blobValue === "object" &&
-		Array.isArray((blobValue as { data?: number[] }).data)
-	) {
+	} else if (blobValue && typeof blobValue === "object" && Array.isArray((blobValue as { data?: number[] }).data)) {
 		bytes = new Uint8Array((blobValue as { data: number[] }).data);
 	}
 	if (!bytes) {
@@ -113,7 +109,6 @@ const displayPicturePuzzle = async () => {
 	if (!imageTemp) {
 		return;
 	}
-	console.log("displayPicturePuzzle: imageTemp: ", JSON.parse(JSON.stringify(imageTemp)));
 
 	const sourceBytes = puzzleImageBytes(imageTemp.blob);
 	if (!sourceBytes) {
@@ -122,15 +117,13 @@ const displayPicturePuzzle = async () => {
 	const sourceMimeType =
 		typeof imageTemp.mime_type === "string" && imageTemp.mime_type ? imageTemp.mime_type : "image/png";
 	const loadMimeType = sourceMimeType === "image/jpg" ? "image/jpeg" : sourceMimeType;
-	const mimeType: "image/png" | "image/jpeg" =
-		loadMimeType === "image/jpeg" ? "image/jpeg" : "image/png";
+	const mimeType: "image/png" | "image/jpeg" = loadMimeType === "image/jpeg" ? "image/jpeg" : "image/png";
 	await nextTick();
 	const canvas = picturePuzzleCanvas.value;
 	if (!canvas) {
 		return;
 	}
 	const sourceImage = await loadPuzzleImage(sourceBytes, loadMimeType);
-	console.log("displayPicturePuzzle: sourceImage: ", sourceImage);
 	const pieceWidth = sourceImage.width / picturePuzzleGridSize.value;
 	const pieceHeight = sourceImage.height / picturePuzzleGridSize.value;
 	const canvasWidth = Math.max(1, Math.round(pieceWidth));
