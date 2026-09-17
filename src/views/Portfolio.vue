@@ -20,6 +20,85 @@ const picturePuzzleGrid = ref<types.KeyValue[]>([]);
 const picturePuzzleImage = ref<File | null>(null);
 const picturePuzzleCanvas = ref<HTMLCanvasElement | null>(null);
 
+const base64ToBytes = (value: string): Uint8Array => {
+	const cleaned = value.replace(/\s/g, "");
+	const binary = atob(cleaned);
+	const bytes = new Uint8Array(binary.length);
+	for (let i = 0; i < binary.length; i++) {
+		bytes[i] = binary.charCodeAt(i);
+	}
+	return bytes;
+};
+const bytesLookLikeImage = (bytes: Uint8Array): boolean => {
+	if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+		return true;
+	}
+	if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+		return true;
+	}
+	if (bytes.length >= 6) {
+		const header = String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
+		if (header === "GIF87a" || header === "GIF89a") {
+			return true;
+		}
+	}
+	if (
+		bytes.length >= 12 &&
+		String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]) === "RIFF" &&
+		String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]) === "WEBP"
+	) {
+		return true;
+	}
+	return false;
+};
+const puzzleImageBytes = (blobValue: unknown): Uint8Array | null => {
+	let bytes: Uint8Array | null = null;
+	if (typeof blobValue === "string") {
+		const raw = blobValue.includes(",") ? blobValue.split(",")[1] || "" : blobValue;
+		if (!raw.replace(/\s/g, "")) {
+			return null;
+		}
+		bytes = base64ToBytes(raw);
+	} else if (
+		blobValue &&
+		typeof blobValue === "object" &&
+		Array.isArray((blobValue as { data?: number[] }).data)
+	) {
+		bytes = new Uint8Array((blobValue as { data: number[] }).data);
+	}
+	if (!bytes) {
+		return null;
+	}
+	if (bytesLookLikeImage(bytes)) {
+		return bytes;
+	}
+	const asText = new TextDecoder("utf-8").decode(bytes).replace(/\s/g, "");
+	if (/^[A-Za-z0-9+/]+=*$/.test(asText)) {
+		const innerBytes = base64ToBytes(asText);
+		if (bytesLookLikeImage(innerBytes)) {
+			return innerBytes;
+		}
+	}
+	return bytes;
+};
+const loadPuzzleImage = (bytes: Uint8Array, mimeType: string): Promise<HTMLImageElement> => {
+	return new Promise((resolve, reject) => {
+		const arrayBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+		const blob = new Blob([arrayBuffer as ArrayBuffer], { type: mimeType });
+		const objectUrl = URL.createObjectURL(blob);
+		const img = new Image();
+		img.onload = () => {
+			URL.revokeObjectURL(objectUrl);
+			resolve(img);
+		};
+		img.onerror = () => {
+			URL.revokeObjectURL(objectUrl);
+			reject(new Error("Failed to load the puzzle image"));
+		};
+		img.src = objectUrl;
+	});
+};
+
 const displayPicturePuzzle = async () => {
 	const shuffleArray = (array: types.KeyValue[]) => {
 		for (let i = array.length - 1; i > 0; i--) {
@@ -36,36 +115,21 @@ const displayPicturePuzzle = async () => {
 	}
 	console.log("displayPicturePuzzle: imageTemp: ", JSON.parse(JSON.stringify(imageTemp)));
 
-	const sourceBlob = typeof imageTemp.blob === "string" ? imageTemp.blob : "";
-	if (!sourceBlob) {
+	const sourceBytes = puzzleImageBytes(imageTemp.blob);
+	if (!sourceBytes) {
 		return;
 	}
 	const sourceMimeType =
 		typeof imageTemp.mime_type === "string" && imageTemp.mime_type ? imageTemp.mime_type : "image/png";
-	// Browser canvas toDataURL only accepts png/jpeg, so map other source types to png.
+	const loadMimeType = sourceMimeType === "image/jpg" ? "image/jpeg" : sourceMimeType;
 	const mimeType: "image/png" | "image/jpeg" =
-		sourceMimeType === "image/jpeg" || sourceMimeType === "image/jpg" ? "image/jpeg" : "image/png";
-	// HTMLImageElement.src needs a data URL or http(s) URL; raw base64 from the API is not a valid src.
-	let imageSrc = sourceBlob;
-	if (!sourceBlob.startsWith("data:") && !sourceBlob.startsWith("http://") && !sourceBlob.startsWith("https://")) {
-		imageSrc = `data:${sourceMimeType};base64,${sourceBlob}`;
-	}
-	console.log("displayPicturePuzzle: imageSrc: ", imageSrc);
+		loadMimeType === "image/jpeg" ? "image/jpeg" : "image/png";
 	await nextTick();
 	const canvas = picturePuzzleCanvas.value;
 	if (!canvas) {
 		return;
 	}
-	const sourceImage = await new Promise<HTMLImageElement>((resolve, reject) => {
-		const img = new Image();
-		img.onload = () => {
-			resolve(img);
-		};
-		img.onerror = () => {
-			reject(new Error("Failed to load the puzzle image"));
-		};
-		img.src = imageSrc;
-	});
+	const sourceImage = await loadPuzzleImage(sourceBytes, loadMimeType);
 	console.log("displayPicturePuzzle: sourceImage: ", sourceImage);
 	const pieceWidth = sourceImage.width / picturePuzzleGridSize.value;
 	const pieceHeight = sourceImage.height / picturePuzzleGridSize.value;
