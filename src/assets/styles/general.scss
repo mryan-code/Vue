@@ -2581,11 +2581,14 @@ textarea {
 	height: fit-content;
 	margin: 0 auto;
 	margin-top: var(--padding);
+	position: relative;
+	border: 1px solid var(--divider);
 }
 .picturePuzzleGridItem {
 	width: fit-content;
 	height: fit-content;
 	display: inline-block;
+	position: absolute;
 	img {
 		display: inline-block;
 		vertical-align: middle;

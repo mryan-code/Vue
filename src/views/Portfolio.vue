@@ -314,6 +314,10 @@ onBeforeUnmount(() => {});
 							class="picturePuzzleGridItem"
 							v-for="image in picturePuzzleGrid as types.KeyValue[]"
 							:key="image.piece_id as number"
+							:style="{
+								left: (image.x as number) + 'px',
+								top: (image.y as number) + 'px',
+							}"
 						>
 							<img
 								:src="`data:${image.mime_type as string};base64,${image.blob as string}`"
