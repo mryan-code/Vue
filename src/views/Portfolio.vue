@@ -26,7 +26,7 @@ const displayPicturePuzzle = async () => {
 		}
 		return array;
 	};
-	let imageTemp: types.KeyValue | null = picturePuzzleImageOptions.value[picturePuzzleImageOption.value];
+	let imageTemp: types.KeyValue | null = picturePuzzleImageOptions.value[picturePuzzleImageOption.value - 1];
 	console.log("displayPicturePuzzle: imageTemp: ", JSON.parse(JSON.stringify(imageTemp)));
 	picturePuzzleGrid.value = [];
 	if (!imageTemp) {
@@ -140,8 +140,13 @@ const getPicturePuzzleImages = async () => {
 	);
 };
 onMounted(async () => {
-	await getPicturePuzzleImages();
-	await displayPicturePuzzle();
+	await getPicturePuzzleImages()
+		.then(async () => {
+			await displayPicturePuzzle();
+		})
+		.catch((error) => {
+			console.error("Error getting picture puzzle images: ", error);
+		});
 });
 
 onBeforeUnmount(() => {});
