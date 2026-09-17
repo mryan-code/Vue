@@ -2582,7 +2582,13 @@ textarea {
 	margin: 0 auto;
 }
 .picturePuzzleGridItem {
+	width: fit-content;
+	height: fit-content;
+	display: inline-block;
 	img {
 		display: inline-block;
+		vertical-align: middle;
+		width: fit-content;
+		height: fit-content;
 	}
 }
