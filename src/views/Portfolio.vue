@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import APIClass from "@/classes/API";
 import { useAppStore } from "@/store/app";
 import * as types from "@/types";
 import { SquarePen, Trash, Copy, Mic, MicOff, Cog, Loader } from "@lucide/vue";
 import moment from "moment-timezone";
-import { createCanvas, loadImage } from "canvas";
+// Deprecated: node-canvas is a Node native binding. Puzzle tiles are sliced with the browser HTML5 canvas instead.
+// import { createCanvas, loadImage } from "canvas";
 
 const API = new APIClass();
 const appStore = useAppStore();
@@ -17,6 +18,7 @@ const picturePuzzleImageOptions = ref<types.KeyValue[]>([]);
 const picturePuzzleGrid = ref<types.KeyValue[]>([]);
 
 const picturePuzzleImage = ref<File | null>(null);
+const picturePuzzleCanvas = ref<HTMLCanvasElement | null>(null);
 
 const displayPicturePuzzle = async () => {
 	const shuffleArray = (array: types.KeyValue[]) => {
@@ -40,24 +42,46 @@ const displayPicturePuzzle = async () => {
 	}
 	const sourceMimeType =
 		typeof imageTemp.mime_type === "string" && imageTemp.mime_type ? imageTemp.mime_type : "image/png";
-	// node-canvas toDataURL only accepts png/jpeg, so map other source types to png.
+	// Browser canvas toDataURL only accepts png/jpeg, so map other source types to png.
 	const mimeType: "image/png" | "image/jpeg" =
 		sourceMimeType === "image/jpeg" || sourceMimeType === "image/jpg" ? "image/jpeg" : "image/png";
-	// canvas loadImage sets <img>.src; raw base64 is not a valid src, so wrap it as a data URL.
+	// HTMLImageElement.src needs a data URL or http(s) URL; raw base64 from the API is not a valid src.
 	let imageSrc = sourceBlob;
+	if (!sourceBlob.startsWith("data:") && !sourceBlob.startsWith("http://") && !sourceBlob.startsWith("https://")) {
+		imageSrc = `data:${sourceMimeType};base64,${sourceBlob}`;
+	}
 	console.log("displayPicturePuzzle: imageSrc: ", imageSrc);
-	const sourceImage = await loadImage(imageSrc);
+	await nextTick();
+	const canvas = picturePuzzleCanvas.value;
+	if (!canvas) {
+		return;
+	}
+	const sourceImage = await new Promise<HTMLImageElement>((resolve, reject) => {
+		const img = new Image();
+		img.onload = () => {
+			resolve(img);
+		};
+		img.onerror = () => {
+			reject(new Error("Failed to load the puzzle image"));
+		};
+		img.src = imageSrc;
+	});
 	console.log("displayPicturePuzzle: sourceImage: ", sourceImage);
 	const pieceWidth = sourceImage.width / picturePuzzleGridSize.value;
 	const pieceHeight = sourceImage.height / picturePuzzleGridSize.value;
 	const canvasWidth = Math.max(1, Math.round(pieceWidth));
 	const canvasHeight = Math.max(1, Math.round(pieceHeight));
+	canvas.width = canvasWidth;
+	canvas.height = canvasHeight;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) {
+		return;
+	}
 	const pieces: types.KeyValue[] = [];
 	let pieceId = 1;
 	for (let row = 0; row < picturePuzzleGridSize.value; row++) {
 		for (let col = 0; col < picturePuzzleGridSize.value; col++) {
-			const canvas = createCanvas(canvasWidth, canvasHeight);
-			const ctx = canvas.getContext("2d");
+			ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 			ctx.drawImage(
 				sourceImage,
 				col * pieceWidth,
@@ -201,6 +225,14 @@ onBeforeUnmount(() => {});
 							</button>
 						</div>
 					</div>
+					<canvas
+						ref="picturePuzzleCanvas"
+						class="picturePuzzleWorkCanvas"
+						width="1"
+						height="1"
+						aria-hidden="true"
+						style="display: none"
+					></canvas>
 					<div class="picturePuzzleGrid" v-if="picturePuzzleGrid.length > 0">
 						<div
 							class="picturePuzzleGridItem"
