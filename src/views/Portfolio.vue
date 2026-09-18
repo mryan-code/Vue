@@ -315,7 +315,7 @@ onBeforeUnmount(() => {});
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
 						item-key="piece_id"
-						@start="async (event: Event) => await slidePicturePuzzlePiece(event)"
+						@change="async (event: Event) => await slidePicturePuzzlePiece(event)"
 					>
 						<template #item="{ element }">
 							<div
