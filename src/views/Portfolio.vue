@@ -315,7 +315,7 @@ onBeforeUnmount(() => {});
 						style="display: none"
 					></canvas>
 					<draggable
-						class="picturePuzzleGrid"
+						id="picturePuzzleGridContainer"
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
 						group="picturePuzzleGrid"
