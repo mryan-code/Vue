@@ -274,7 +274,7 @@ onUnmounted(async () => {
 						<v-expansion-panels
 							v-if="
 								appStore.globalVars.GLOBAL_DEBUG_LEVEL == 'debug' ||
-								appStore.globalVars.DEBUG_USER == 'mryan'
+								appStore.globalVars.DEBUG_USER == 'foobar'
 							"
 						>
 							<v-expansion-panel title="Global Variables">
