@@ -311,7 +311,7 @@ onBeforeUnmount(() => {});
 						aria-hidden="true"
 						style="display: none"
 					></canvas>
-					<draggable
+					<VueDraggableNext
 						id="picturePuzzleGrid"
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
@@ -335,7 +335,7 @@ onBeforeUnmount(() => {});
 								/>
 							</div>
 						</template>
-					</draggable>
+					</VueDraggableNext>
 				</div>
 			</div>
 		</div>
