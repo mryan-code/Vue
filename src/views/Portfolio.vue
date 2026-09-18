@@ -25,6 +25,11 @@ const picturePuzzleCanvasWidth = ref(0);
 const picturePuzzleCanvasHeight = ref(0);
 const element = ref<HTMLElement | null>(null);
 const picturePuzzleEmptySpot = ref({ x: 0, y: 0, col: 0, row: 0 });
+const picturePuzzleDragLock = ref<{
+	axis: "x" | "y";
+	min_translate: number;
+	max_translate: number;
+} | null>(null);
 
 const base64ToBytes = (value: string): Uint8Array => {
 	const cleaned = value.replace(/\s/g, "");
@@ -112,7 +117,8 @@ const picturePuzzlePieceStyle = (piece: types.KeyValue) => {
 		backgroundSize: "cover",
 		backgroundPosition: "center",
 		backgroundRepeat: "no-repeat",
-		cursor: piece.can_slide === true ? "grab" : "default",
+		cursor:
+			piece.can_slide === true ? (piece.slide_axis === "x" ? "ew-resize" : "ns-resize") : "default",
 	};
 };
 
@@ -127,7 +133,67 @@ const picturePuzzlePieceTouchesEmpty = (piece: types.KeyValue): boolean => {
 const updatePicturePuzzleDragState = () => {
 	for (const piece of picturePuzzleGrid.value) {
 		piece.can_slide = picturePuzzlePieceTouchesEmpty(piece);
+		// Same row slides on x toward the hole; same column slides on y.
+		piece.slide_axis =
+			piece.can_slide === true
+				? (piece.row as number) === picturePuzzleEmptySpot.value.row
+					? "x"
+					: "y"
+				: "";
 	}
+};
+
+const constrainPicturePuzzleFallback = () => {
+	const lock = picturePuzzleDragLock.value;
+	if (!lock) {
+		return;
+	}
+	const fallback = document.querySelector(".sortable-fallback") as HTMLElement | null;
+	if (!fallback) {
+		return;
+	}
+	const matrix = new DOMMatrix(getComputedStyle(fallback).transform);
+	let translateX = matrix.e;
+	let translateY = matrix.f;
+	if (lock.axis === "x") {
+		translateX = Math.min(lock.max_translate, Math.max(lock.min_translate, translateX));
+		translateY = 0;
+	} else {
+		translateY = Math.min(lock.max_translate, Math.max(lock.min_translate, translateY));
+		translateX = 0;
+	}
+	const next = "matrix(1, 0, 0, 1, " + translateX + ", " + translateY + ")";
+	fallback.style.transform = next;
+	fallback.style.webkitTransform = next;
+};
+
+const startPicturePuzzleAxisLock = (event: Event) => {
+	const item = (event as Event & { item?: HTMLElement }).item;
+	const pieceId = Number(item?.dataset?.pieceId);
+	const piece = picturePuzzleGrid.value.find((entry) => entry.piece_id === pieceId);
+	if (!piece || piece.can_slide !== true) {
+		return;
+	}
+	const empty = picturePuzzleEmptySpot.value;
+	const axis = (piece.row as number) === empty.row ? "x" : "y";
+	const start = axis === "x" ? (piece.x as number) : (piece.y as number);
+	const hole = axis === "x" ? empty.x : empty.y;
+	const delta = hole - start;
+	picturePuzzleDragLock.value = {
+		axis: axis,
+		min_translate: Math.min(0, delta),
+		max_translate: Math.max(0, delta),
+	};
+	document.addEventListener("pointermove", constrainPicturePuzzleFallback);
+	document.addEventListener("mousemove", constrainPicturePuzzleFallback);
+	document.addEventListener("touchmove", constrainPicturePuzzleFallback);
+};
+
+const stopPicturePuzzleAxisLock = () => {
+	picturePuzzleDragLock.value = null;
+	document.removeEventListener("pointermove", constrainPicturePuzzleFallback);
+	document.removeEventListener("mousemove", constrainPicturePuzzleFallback);
+	document.removeEventListener("touchmove", constrainPicturePuzzleFallback);
 };
 
 const displayPicturePuzzle = async () => {
@@ -239,6 +305,7 @@ const displayPicturePuzzle = async () => {
 const slidePicturePuzzlePiece = async (event: Event) => {
 	console.log("slidePicturePuzzlePiece: event: ", event);
 	console.log("slidePicturePuzzlePiece: element: ", element.value);
+	stopPicturePuzzleAxisLock();
 	const item = (event as Event & { item?: HTMLElement }).item;
 	const pieceId = Number(item?.dataset?.pieceId);
 	const piece = picturePuzzleGrid.value.find((entry) => entry.piece_id === pieceId);
@@ -317,7 +384,9 @@ onMounted(async () => {
 		});
 });
 
-onBeforeUnmount(() => {});
+onBeforeUnmount(() => {
+	stopPicturePuzzleAxisLock();
+});
 </script>
 
 <template>
@@ -393,10 +462,14 @@ onBeforeUnmount(() => {});
 						draggable=".canSlide"
 						filter=".picturePuzzleGridItem:not(.canSlide)"
 						:prevent-on-filter="true"
+						:force-fallback="true"
+						:fallback-on-body="true"
+						:sort="false"
 						:style="{
 							width: picturePuzzleCanvasWidth + 'px',
 							height: picturePuzzleCanvasHeight + 'px',
 						}"
+						@start="(event: Event) => startPicturePuzzleAxisLock(event)"
 						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
 						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
 					>
