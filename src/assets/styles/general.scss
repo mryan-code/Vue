@@ -2582,6 +2582,9 @@ textarea {
 	background-color: var(--body-bg-section);
 	width: fit-content;
 	height: fit-content;
+	overflow: hidden;
+	border-radius: var(--radius);
+	border: 1px solid var(--divider);
 
 	.picturePuzzleGridItem {
 		width: fit-content;
