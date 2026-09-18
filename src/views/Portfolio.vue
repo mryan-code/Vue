@@ -23,6 +23,7 @@ const picturePuzzleImage = ref<File | null>(null);
 const picturePuzzleCanvas = ref<HTMLCanvasElement | null>(null);
 const picturePuzzleCanvasWidth = ref(0);
 const picturePuzzleCanvasHeight = ref(0);
+const element = ref<HTMLElement | null>(null);
 
 const base64ToBytes = (value: string): Uint8Array => {
 	const cleaned = value.replace(/\s/g, "");
@@ -192,6 +193,7 @@ const displayPicturePuzzle = async () => {
 };
 const slidePicturePuzzlePiece = async (event: Event) => {
 	console.log("slidePicturePuzzlePiece: event: ", event);
+	console.log("slidePicturePuzzlePiece: element: ", element.value);
 };
 const choosePicturePuzzlePiece = async (event: Event) => {
 	console.log("choosePicturePuzzlePiece: event: ", event);
@@ -319,6 +321,7 @@ onBeforeUnmount(() => {});
 					></canvas>
 					<draggable
 						id="picturePuzzleGridContainer"
+						ref="element"
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
 						group="picturePuzzleGrid"
@@ -328,20 +331,20 @@ onBeforeUnmount(() => {});
 							height: picturePuzzleCanvasHeight + 'px',
 						}"
 						item-key="piece_id"
-						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
-						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
+						@onChange="async (event: Event) => await slidePicturePuzzlePiece(event)"
+						@onChoose="async (event: Event) => await choosePicturePuzzlePiece(event)"
 					>
 						<img
 							class="picturePuzzleGridItem"
-							v-for="item in picturePuzzleGrid"
-							:key="item.piece_id as number"
+							v-for="piece in picturePuzzleGrid"
+							:key="piece.piece_id as number"
 							:style="{
-								left: (item.x as number) + 'px',
-								top: (item.y as number) + 'px',
-								width: (item.width as number) + 'px',
-								height: (item.height as number) + 'px',
+								left: (piece.x as number) + 'px',
+								top: (piece.y as number) + 'px',
+								width: (piece.width as number) + 'px',
+								height: (piece.height as number) + 'px',
 							}"
-							:src="`data:${item.mime_type as string};base64,${item.blob as string}`"
+							:src="`data:${piece.mime_type as string};base64,${piece.blob as string}`"
 						/>
 					</draggable>
 				</div>
