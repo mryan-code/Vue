@@ -183,7 +183,7 @@ const displayPicturePuzzle = async () => {
 	//debug: delete the last piece
 	pieces.pop();
 	picturePuzzleGrid.value = pieces;
-	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "foobar") {
+	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
 		console.log("displayPicturePuzzle: picturePuzzleGrid: ", JSON.parse(JSON.stringify(picturePuzzleGrid.value)));
 	}
 };
