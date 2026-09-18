@@ -158,10 +158,13 @@ const displayPicturePuzzle = async () => {
 			);
 			const dataUrl = mimeType === "image/jpeg" ? canvas.toDataURL("image/jpeg") : canvas.toDataURL("image/png");
 			const blob = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+			const imageBlob = new Blob([blob], { type: mimeType });
+			const imageBlobUrl = URL.createObjectURL(imageBlob);
 			pieces.push({
 				piece_id: pieceId,
 				mime_type: mimeType,
 				blob: blob,
+				blobUrl: imageBlobUrl,
 				width: pieceWidth,
 				height: pieceHeight,
 			});
@@ -341,14 +344,12 @@ onBeforeUnmount(() => {});
 								top: (piece.y as number) + 'px',
 								width: (piece.width as number) + 'px',
 								height: (piece.height as number) + 'px',
+								backgroundImage: `url("${piece.blobUrl as string}")`,
+								backgroundSize: 'cover',
+								backgroundPosition: 'center',
+								backgroundRepeat: 'no-repeat',
 							}"
 						>
-							<img
-								:src="`data:${piece.mime_type as string};base64,${piece.blob as string}`"
-								:alt="`Puzzle piece ${piece.piece_id as number}`"
-								:width="piece.width as number"
-								:height="piece.height as number"
-							/>
 						</div>
 					</draggable>
 				</div>
