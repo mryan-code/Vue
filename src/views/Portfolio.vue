@@ -100,6 +100,20 @@ const loadPuzzleImage = (bytes: Uint8Array, mimeType: string): Promise<HTMLImage
 	});
 };
 
+// Keep CSS values out of the template so nested quotes cannot break Vue's attribute parser.
+const picturePuzzlePieceStyle = (piece: types.KeyValue) => {
+	return {
+		left: (piece.x as number) + "px",
+		top: (piece.y as number) + "px",
+		width: (piece.width as number) + "px",
+		height: (piece.height as number) + "px",
+		backgroundImage: "url(" + (piece.blobUrl as string) + ")",
+		backgroundSize: "cover",
+		backgroundPosition: "center",
+		backgroundRepeat: "no-repeat",
+	};
+};
+
 const displayPicturePuzzle = async () => {
 	const shuffleArray = (array: types.KeyValue[]) => {
 		for (let i = array.length - 1; i > 0; i--) {
@@ -158,13 +172,12 @@ const displayPicturePuzzle = async () => {
 			);
 			const dataUrl = mimeType === "image/jpeg" ? canvas.toDataURL("image/jpeg") : canvas.toDataURL("image/png");
 			const blob = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
-			const imageBlob = new Blob([blob], { type: mimeType });
-			const imageBlobUrl = URL.createObjectURL(imageBlob);
+			// Use the data URL itself; wrapping the base64 string in a Blob is not image bytes.
 			pieces.push({
 				piece_id: pieceId,
 				mime_type: mimeType,
 				blob: blob,
-				blobUrl: imageBlobUrl,
+				blobUrl: dataUrl,
 				width: pieceWidth,
 				height: pieceHeight,
 			});
@@ -327,28 +340,18 @@ onBeforeUnmount(() => {});
 						ref="element"
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
-						target=".picturePuzzleGridItem"
 						:style="{
 							width: picturePuzzleCanvasWidth + 'px',
 							height: picturePuzzleCanvasHeight + 'px',
 						}"
-						@onChange="async (event: Event) => await slidePicturePuzzlePiece(event)"
-						@onChoose="async (event: Event) => await choosePicturePuzzlePiece(event)"
+						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
+						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
 					>
 						<div
 							class="picturePuzzleGridItem"
 							v-for="piece in picturePuzzleGrid"
 							:key="piece.piece_id as number"
-							:style="{
-								left: (piece.x as number) + 'px',
-								top: (piece.y as number) + 'px',
-								width: (piece.width as number) + 'px',
-								height: (piece.height as number) + 'px',
-								backgroundImage: `url("${piece.blobUrl as string}")`,
-								backgroundSize: 'cover',
-								backgroundPosition: 'center',
-								backgroundRepeat: 'no-repeat',
-							}"
+							:style="picturePuzzlePieceStyle(piece)"
 						>
 						</div>
 					</draggable>
