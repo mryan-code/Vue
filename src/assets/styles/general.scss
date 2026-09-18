@@ -2591,13 +2591,11 @@ textarea {
 		height: fit-content;
 		display: inline-block;
 		position: absolute;
-		cursor: pointer;
-		img {
-			width: fit-content;
-			height: fit-content;
-			display: inline-block;
-			position: absolute;
-			cursor: pointer;
+		&.canSlide {
+			cursor: grab;
+		}
+		&:not(.canSlide) {
+			cursor: default;
 		}
 	}
 }

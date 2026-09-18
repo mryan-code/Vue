@@ -24,6 +24,7 @@ const picturePuzzleCanvas = ref<HTMLCanvasElement | null>(null);
 const picturePuzzleCanvasWidth = ref(0);
 const picturePuzzleCanvasHeight = ref(0);
 const element = ref<HTMLElement | null>(null);
+const picturePuzzleEmptySpot = ref({ x: 0, y: 0, col: 0, row: 0 });
 
 const base64ToBytes = (value: string): Uint8Array => {
 	const cleaned = value.replace(/\s/g, "");
@@ -111,7 +112,22 @@ const picturePuzzlePieceStyle = (piece: types.KeyValue) => {
 		backgroundSize: "cover",
 		backgroundPosition: "center",
 		backgroundRepeat: "no-repeat",
+		cursor: piece.can_slide === true ? "grab" : "default",
 	};
+};
+
+// Orthogonal neighbors of the hole (2 on a corner, 3 on an edge, 4 in the center) may slide.
+const picturePuzzlePieceTouchesEmpty = (piece: types.KeyValue): boolean => {
+	const emptyCol = picturePuzzleEmptySpot.value.col;
+	const emptyRow = picturePuzzleEmptySpot.value.row;
+	const col = piece.col as number;
+	const row = piece.row as number;
+	return Math.abs(col - emptyCol) + Math.abs(row - emptyRow) === 1;
+};
+const updatePicturePuzzleDragState = () => {
+	for (const piece of picturePuzzleGrid.value) {
+		piece.can_slide = picturePuzzlePieceTouchesEmpty(piece);
+	}
 };
 
 const displayPicturePuzzle = async () => {
@@ -180,29 +196,42 @@ const displayPicturePuzzle = async () => {
 				blobUrl: dataUrl,
 				width: pieceWidth,
 				height: pieceHeight,
+				can_slide: false,
 			});
 			pieceId++;
 		}
 	}
 	pieces = shuffleArray(pieces);
-	let pieceY = 0;
-	let pieceX = 0;
-	for await (const piece of pieces) {
-		piece.x = pieceX;
-		piece.y = pieceY;
-
-		if (pieceX + (piece.width as number) == canvasWidth * picturePuzzleGridSize.value) {
-			pieceX = 0;
-			pieceY += piece.height as number;
-		} else {
-			pieceX += piece.width as number;
+	let pieceCol = 0;
+	let pieceRow = 0;
+	for (const piece of pieces) {
+		piece.col = pieceCol;
+		piece.row = pieceRow;
+		piece.x = pieceCol * canvasWidth;
+		piece.y = pieceRow * canvasHeight;
+		piece.can_slide = false;
+		pieceCol++;
+		if (pieceCol === picturePuzzleGridSize.value) {
+			pieceCol = 0;
+			pieceRow++;
 		}
 	}
 	//debug: delete the last piece
+	// The removed tile leaves the hole; only tiles sharing an edge with that hole can drag.
+	const emptyPiece = pieces[pieces.length - 1];
+	if (emptyPiece) {
+		picturePuzzleEmptySpot.value = {
+			x: emptyPiece.x as number,
+			y: emptyPiece.y as number,
+			col: emptyPiece.col as number,
+			row: emptyPiece.row as number,
+		};
+	}
 	pieces.pop();
 	picturePuzzleGrid.value = pieces;
 	picturePuzzleCanvasWidth.value = canvasWidth * picturePuzzleGridSize.value;
 	picturePuzzleCanvasHeight.value = canvasHeight * picturePuzzleGridSize.value;
+	updatePicturePuzzleDragState();
 	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
 		console.log("displayPicturePuzzle: picturePuzzleGrid: ", JSON.parse(JSON.stringify(picturePuzzleGrid.value)));
 	}
@@ -210,6 +239,27 @@ const displayPicturePuzzle = async () => {
 const slidePicturePuzzlePiece = async (event: Event) => {
 	console.log("slidePicturePuzzlePiece: event: ", event);
 	console.log("slidePicturePuzzlePiece: element: ", element.value);
+	const item = (event as Event & { item?: HTMLElement }).item;
+	const pieceId = Number(item?.dataset?.pieceId);
+	const piece = picturePuzzleGrid.value.find((entry) => entry.piece_id === pieceId);
+	if (!piece || piece.can_slide !== true) {
+		return;
+	}
+	const nextX = picturePuzzleEmptySpot.value.x;
+	const nextY = picturePuzzleEmptySpot.value.y;
+	const nextCol = picturePuzzleEmptySpot.value.col;
+	const nextRow = picturePuzzleEmptySpot.value.row;
+	picturePuzzleEmptySpot.value = {
+		x: piece.x as number,
+		y: piece.y as number,
+		col: piece.col as number,
+		row: piece.row as number,
+	};
+	piece.x = nextX;
+	piece.y = nextY;
+	piece.col = nextCol;
+	piece.row = nextRow;
+	updatePicturePuzzleDragState();
 };
 const choosePicturePuzzlePiece = async (event: Event) => {
 	console.log("choosePicturePuzzlePiece: event: ", event);
@@ -340,6 +390,9 @@ onBeforeUnmount(() => {});
 						ref="element"
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
+						draggable=".canSlide"
+						filter=".picturePuzzleGridItem:not(.canSlide)"
+						:prevent-on-filter="true"
 						:style="{
 							width: picturePuzzleCanvasWidth + 'px',
 							height: picturePuzzleCanvasHeight + 'px',
@@ -349,8 +402,10 @@ onBeforeUnmount(() => {});
 					>
 						<div
 							class="picturePuzzleGridItem"
+							:class="{ canSlide: piece.can_slide === true }"
 							v-for="piece in picturePuzzleGrid"
 							:key="piece.piece_id as number"
+							:data-piece-id="piece.piece_id as number"
 							:style="picturePuzzlePieceStyle(piece)"
 						>
 						</div>
