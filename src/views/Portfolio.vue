@@ -315,11 +315,11 @@ onBeforeUnmount(() => {});
 						style="display: none"
 					></canvas>
 					<draggable
-						id="picturePuzzleGrid"
+						class="picturePuzzleGrid"
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
 						group="picturePuzzleGrid"
-						target="#picturePuzzleGrid"
+						target=".picturePuzzleGridItem"
 						item-key="piece_id"
 						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
 						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
