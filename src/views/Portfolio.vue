@@ -323,8 +323,10 @@ onBeforeUnmount(() => {});
 						v-model="picturePuzzleGrid"
 						group="picturePuzzleGrid"
 						target=".picturePuzzleGridItem"
-						:width="picturePuzzleCanvasWidth"
-						:height="picturePuzzleCanvasHeight"
+						:style="{
+							width: picturePuzzleCanvasWidth + 'px',
+							height: picturePuzzleCanvasHeight + 'px',
+						}"
 						item-key="piece_id"
 						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
 						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
