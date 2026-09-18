@@ -186,6 +186,9 @@ const displayPicturePuzzle = async () => {
 		console.log("displayPicturePuzzle: picturePuzzleGrid: ", JSON.parse(JSON.stringify(picturePuzzleGrid.value)));
 	}
 };
+const slidePicturePuzzlePiece = async (event: Event) => {
+	console.log("slidePicturePuzzlePiece: event: ", event);
+};
 const selectPicturePuzzleImage = async (event: Event) => {
 	event.preventDefault();
 };
@@ -312,6 +315,7 @@ onBeforeUnmount(() => {});
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
 						item-key="piece_id"
+						@start="async (event: Event) => await slidePicturePuzzlePiece(event)"
 					>
 						<template #item="{ element }">
 							<div
