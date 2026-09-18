@@ -315,7 +315,6 @@ onBeforeUnmount(() => {});
 						id="picturePuzzleGrid"
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
-						group="picturePuzzleGrid"
 						item-key="piece_id"
 						@change="async (event: Event) => await slidePicturePuzzlePiece(event)"
 					>
