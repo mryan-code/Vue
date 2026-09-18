@@ -2579,17 +2579,10 @@ textarea {
 #picturePuzzleGridContainer {
 	margin-top: var(--padding);
 	position: relative;
-}
-.picturePuzzleGridItem {
-	width: fit-content;
-	height: fit-content;
-	display: inline-block;
-	position: absolute;
-	cursor: pointer;
+
 	img {
 		display: inline-block;
-		vertical-align: middle;
-		width: fit-content;
-		height: fit-content;
+		position: absolute;
+		cursor: pointer;
 	}
 }

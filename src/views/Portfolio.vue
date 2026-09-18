@@ -331,22 +331,18 @@ onBeforeUnmount(() => {});
 						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
 						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
 					>
-						<div
+						<img
 							class="picturePuzzleGridItem"
 							v-for="item in picturePuzzleGrid"
 							:key="item.piece_id as number"
 							:style="{
 								left: (item.x as number) + 'px',
 								top: (item.y as number) + 'px',
+								width: (item.width as number) + 'px',
+								height: (item.height as number) + 'px',
 							}"
-						>
-							<img
-								:src="`data:${item.mime_type as string};base64,${item.blob as string}`"
-								:alt="`Puzzle piece ${item.piece_id as number}`"
-								:width="item.width as number"
-								:height="item.height as number"
-							/>
-						</div>
+							:src="`data:${item.mime_type as string};base64,${item.blob as string}`"
+						/>
 					</draggable>
 				</div>
 			</div>
