@@ -6,7 +6,7 @@ import * as types from "@/types";
 import { SquarePen, Trash, Copy, Mic, MicOff, Cog, Loader } from "@lucide/vue";
 import moment from "moment-timezone";
 // import draggable from "vuedraggable";
-import { VueDraggableNext } from "vue-draggable-next";
+import { VueDraggableNext as draggable } from "vue-draggable-next";
 // Deprecated: node-canvas is a Node native binding. Puzzle tiles are sliced with the browser HTML5 canvas instead.
 // import { createCanvas, loadImage } from "canvas";
 
@@ -311,7 +311,7 @@ onBeforeUnmount(() => {});
 						aria-hidden="true"
 						style="display: none"
 					></canvas>
-					<VueDraggableNext
+					<draggable
 						id="picturePuzzleGrid"
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
@@ -335,7 +335,7 @@ onBeforeUnmount(() => {});
 								/>
 							</div>
 						</template>
-					</VueDraggableNext>
+					</draggable>
 				</div>
 			</div>
 		</div>
