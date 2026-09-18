@@ -228,10 +228,6 @@ const getPicturePuzzleImages = async () => {
 			picturePuzzleImageOptions.value.push(image);
 		}
 	}
-	console.log(
-		"getPicturePuzzleImages: picturePuzzleImageOptions: ",
-		JSON.parse(JSON.stringify(picturePuzzleImageOptions.value)),
-	);
 };
 onMounted(async () => {
 	await getPicturePuzzleImages()
