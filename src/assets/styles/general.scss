@@ -2580,10 +2580,21 @@ textarea {
 	margin-top: var(--padding);
 	position: relative;
 	background-color: var(--body-bg-section);
+	width: fit-content;
+	height: fit-content;
 
-	img {
+	.picturePuzzleGridItem {
+		width: fit-content;
+		height: fit-content;
 		display: inline-block;
 		position: absolute;
 		cursor: pointer;
+		img {
+			width: fit-content;
+			height: fit-content;
+			display: inline-block;
+			position: absolute;
+			cursor: pointer;
+		}
 	}
 }
