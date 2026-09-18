@@ -2579,6 +2579,9 @@ textarea {
 #picturePuzzleGridContainer {
 	margin-top: var(--padding);
 	position: relative;
+	background-color: var(--section-bg);
+	border: 1px solid var(--divider);
+	border-radius: var(--radius);
 
 	img {
 		display: inline-block;
