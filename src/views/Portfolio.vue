@@ -6,7 +6,7 @@ import * as types from "@/types";
 import { SquarePen, Trash, Copy, Mic, MicOff, Cog, Loader } from "@lucide/vue";
 import moment from "moment-timezone";
 // import draggable from "vuedraggable";
-import { VueDraggableNext as draggable } from "vue-draggable-next";
+import { VueDraggable as draggable } from "vue-draggable-plus";
 // Deprecated: node-canvas is a Node native binding. Puzzle tiles are sliced with the browser HTML5 canvas instead.
 // import { createCanvas, loadImage } from "canvas";
 
@@ -190,6 +190,9 @@ const displayPicturePuzzle = async () => {
 const slidePicturePuzzlePiece = async (event: Event) => {
 	console.log("slidePicturePuzzlePiece: event: ", event);
 };
+const choosePicturePuzzlePiece = async (event: Event) => {
+	console.log("choosePicturePuzzlePiece: event: ", event);
+};
 const selectPicturePuzzleImage = async (event: Event) => {
 	event.preventDefault();
 };
@@ -316,8 +319,10 @@ onBeforeUnmount(() => {});
 						v-if="picturePuzzleGrid.length > 0"
 						v-model="picturePuzzleGrid"
 						group="picturePuzzleGrid"
+						target="#picturePuzzleGrid"
 						item-key="piece_id"
-						@change="async (event: Event) => await slidePicturePuzzlePiece(event)"
+						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
+						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
 					>
 						<div
 							class="picturePuzzleGridItem"
