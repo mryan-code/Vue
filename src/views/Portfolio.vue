@@ -184,8 +184,8 @@ const displayPicturePuzzle = async () => {
 	//debug: delete the last piece
 	pieces.pop();
 	picturePuzzleGrid.value = pieces;
-	picturePuzzleCanvasWidth.value = canvasWidth;
-	picturePuzzleCanvasHeight.value = canvasHeight;
+	picturePuzzleCanvasWidth.value = canvasWidth * picturePuzzleGridSize.value;
+	picturePuzzleCanvasHeight.value = canvasHeight * picturePuzzleGridSize.value;
 	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
 		console.log("displayPicturePuzzle: picturePuzzleGrid: ", JSON.parse(JSON.stringify(picturePuzzleGrid.value)));
 	}
