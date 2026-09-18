@@ -21,7 +21,8 @@ const picturePuzzleGrid = ref<types.KeyValue[]>([]);
 
 const picturePuzzleImage = ref<File | null>(null);
 const picturePuzzleCanvas = ref<HTMLCanvasElement | null>(null);
-const picturePuzzleImageWidth = ref(0);
+const picturePuzzleCanvasWidth = ref(0);
+const picturePuzzleCanvasHeight = ref(0);
 
 const base64ToBytes = (value: string): Uint8Array => {
 	const cleaned = value.replace(/\s/g, "");
@@ -106,7 +107,7 @@ const displayPicturePuzzle = async () => {
 		}
 		return array;
 	};
-	picturePuzzleImageWidth.value = document.getElementById("picturePuzzleGrid")?.clientWidth || 0;
+
 	let imageTemp: types.KeyValue | null = picturePuzzleImageOptions.value[picturePuzzleImageOption.value - 1];
 
 	picturePuzzleGrid.value = [];
@@ -183,6 +184,8 @@ const displayPicturePuzzle = async () => {
 	//debug: delete the last piece
 	pieces.pop();
 	picturePuzzleGrid.value = pieces;
+	picturePuzzleCanvasWidth.value = canvasWidth;
+	picturePuzzleCanvasHeight.value = canvasHeight;
 	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
 		console.log("displayPicturePuzzle: picturePuzzleGrid: ", JSON.parse(JSON.stringify(picturePuzzleGrid.value)));
 	}
@@ -309,8 +312,8 @@ onBeforeUnmount(() => {});
 					<canvas
 						ref="picturePuzzleCanvas"
 						class="picturePuzzleWorkCanvas"
-						width="1"
-						height="1"
+						:width="picturePuzzleCanvasWidth"
+						:height="picturePuzzleCanvasHeight"
 						aria-hidden="true"
 						style="display: none"
 					></canvas>
@@ -320,6 +323,8 @@ onBeforeUnmount(() => {});
 						v-model="picturePuzzleGrid"
 						group="picturePuzzleGrid"
 						target=".picturePuzzleGridItem"
+						:width="picturePuzzleCanvasWidth"
+						:height="picturePuzzleCanvasHeight"
 						item-key="piece_id"
 						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
 						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
