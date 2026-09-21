@@ -117,8 +117,7 @@ const picturePuzzlePieceStyle = (piece: types.KeyValue) => {
 		backgroundSize: "cover",
 		backgroundPosition: "center",
 		backgroundRepeat: "no-repeat",
-		cursor:
-			piece.can_slide === true ? (piece.slide_axis === "x" ? "ew-resize" : "ns-resize") : "default",
+		cursor: piece.can_slide === true ? (piece.slide_axis === "x" ? "ew-resize" : "ns-resize") : "default",
 	};
 };
 
@@ -135,11 +134,7 @@ const updatePicturePuzzleDragState = () => {
 		piece.can_slide = picturePuzzlePieceTouchesEmpty(piece);
 		// Same row slides on x toward the hole; same column slides on y.
 		piece.slide_axis =
-			piece.can_slide === true
-				? (piece.row as number) === picturePuzzleEmptySpot.value.row
-					? "x"
-					: "y"
-				: "";
+			piece.can_slide === true ? ((piece.row as number) === picturePuzzleEmptySpot.value.row ? "x" : "y") : "";
 	}
 };
 
@@ -298,7 +293,7 @@ const displayPicturePuzzle = async () => {
 	picturePuzzleCanvasWidth.value = canvasWidth * picturePuzzleGridSize.value;
 	picturePuzzleCanvasHeight.value = canvasHeight * picturePuzzleGridSize.value;
 	updatePicturePuzzleDragState();
-	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "foobar") {
 		console.log("displayPicturePuzzle: picturePuzzleGrid: ", JSON.parse(JSON.stringify(picturePuzzleGrid.value)));
 	}
 };
@@ -480,8 +475,7 @@ onBeforeUnmount(() => {
 							:key="piece.piece_id as number"
 							:data-piece-id="piece.piece_id as number"
 							:style="picturePuzzlePieceStyle(piece)"
-						>
-						</div>
+						></div>
 					</draggable>
 				</div>
 			</div>
