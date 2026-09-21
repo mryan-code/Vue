@@ -298,8 +298,6 @@ const displayPicturePuzzle = async () => {
 	}
 };
 const slidePicturePuzzlePiece = async (event: Event) => {
-	console.log("slidePicturePuzzlePiece: event: ", event);
-	console.log("slidePicturePuzzlePiece: element: ", element.value);
 	stopPicturePuzzleAxisLock();
 	const item = (event as Event & { item?: HTMLElement }).item;
 	const pieceId = Number(item?.dataset?.pieceId);
