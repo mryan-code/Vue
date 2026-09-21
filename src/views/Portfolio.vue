@@ -423,7 +423,7 @@ onBeforeUnmount(() => {
 									v-for="option in picturePuzzleImageOptions"
 									:key="option.picture_puzzle_image_id as string"
 								>
-									<label for="option.key as string" class="label"
+									<label for="option.key as string" class="picturePuzzleImageOptionRadio label"
 										><img
 											:src="`data: ${option.mime_type as string};base64, ${option.blob as string}`"
 									/></label>
@@ -435,6 +435,7 @@ onBeforeUnmount(() => {
 										:checked="
 											picturePuzzleImageOption === (option.picture_puzzle_image_id as number)
 										"
+										@change="async () => await displayPicturePuzzle()"
 									/>
 								</div>
 							</div>

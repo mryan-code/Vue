@@ -2599,3 +2599,13 @@ textarea {
 		}
 	}
 }
+
+.picturePuzzleImageOptionRadio {
+	img {
+		max-width: 100px;
+		height: auto;
+		display: inline-block;
+		vertical-align: middle;
+		margin-right: calc(var(--padding) / 2);
+	}
+}
