@@ -327,12 +327,6 @@ const slidePicturePuzzlePiece = async (event: Event) => {
 	piece.row = nextRow;
 	updatePicturePuzzleDragState();
 };
-const choosePicturePuzzlePiece = async (event: Event) => {
-	console.log("choosePicturePuzzlePiece: event: ", event);
-};
-const selectPicturePuzzleImage = async (event: Event) => {
-	event.preventDefault();
-};
 const handleFileSelect = async (event: Event) => {
 	picturePuzzleImage.value = (event.target as HTMLInputElement)?.files?.[0] || null;
 	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "foobar") {
@@ -492,7 +486,6 @@ onBeforeUnmount(() => {
 						}"
 						@start="(event: Event) => startPicturePuzzleAxisLock(event)"
 						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
-						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
 					>
 						<div
 							class="picturePuzzleGridItem"
