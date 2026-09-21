@@ -365,7 +365,7 @@ const getPicturePuzzleImages = async () => {
 		for (const image of getPicturePuzzleImagesRes.results as types.KeyValue[]) {
 			picturePuzzleImageOptions.value.push(image);
 		}
-		if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+		if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "foobar") {
 			console.log(
 				"getPicturePuzzleImages: picturePuzzleImageOptions: ",
 				JSON.parse(JSON.stringify(picturePuzzleImageOptions.value)),
