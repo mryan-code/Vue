@@ -31,6 +31,8 @@ const picturePuzzleDragLock = ref<{
 	max_translate: number;
 } | null>(null);
 
+const picturePuzzleStart = ref(moment().format("YYYY-MM-DD HH:mm:ss"));
+const picturePuzzleStarted = ref(false);
 const base64ToBytes = (value: string): Uint8Array => {
 	const cleaned = value.replace(/\s/g, "");
 	const binary = atob(cleaned);
@@ -298,6 +300,10 @@ const displayPicturePuzzle = async () => {
 	}
 };
 const slidePicturePuzzlePiece = async (event: Event) => {
+	if (picturePuzzleStarted.value !== true) {
+		picturePuzzleStarted.value = true;
+		picturePuzzleStart.value = moment().format("YYYY-MM-DD HH:mm:ss");
+	}
 	stopPicturePuzzleAxisLock();
 	const item = (event as Event & { item?: HTMLElement }).item;
 	const pieceId = Number(item?.dataset?.pieceId);
@@ -320,6 +326,12 @@ const slidePicturePuzzlePiece = async (event: Event) => {
 	piece.col = nextCol;
 	piece.row = nextRow;
 	updatePicturePuzzleDragState();
+};
+const choosePicturePuzzlePiece = async (event: Event) => {
+	console.log("choosePicturePuzzlePiece: event: ", event);
+};
+const selectPicturePuzzleImage = async (event: Event) => {
+	event.preventDefault();
 };
 const handleFileSelect = async (event: Event) => {
 	picturePuzzleImage.value = (event.target as HTMLInputElement)?.files?.[0] || null;
@@ -396,6 +408,9 @@ onBeforeUnmount(() => {
 					<p>A picture puzzle game built with Vue.js and TypeScript.</p>
 				</div>
 				<div class="portfolioItemContent">
+					<div class="picturePuzzleStarted" v-if="picturePuzzleStarted == true">
+						<p>Started: {{ picturePuzzleStart }}</p>
+					</div>
 					<div id="picturePuzzleForm">
 						<div class="picturePuzzleFormItem">
 							<label for="picturePuzzleGridSize">Grid Size</label>
@@ -477,6 +492,7 @@ onBeforeUnmount(() => {
 						}"
 						@start="(event: Event) => startPicturePuzzleAxisLock(event)"
 						@end="async (event: Event) => await slidePicturePuzzlePiece(event)"
+						@choose="async (event: Event) => await choosePicturePuzzlePiece(event)"
 					>
 						<div
 							class="picturePuzzleGridItem"
