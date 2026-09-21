@@ -365,6 +365,12 @@ const getPicturePuzzleImages = async () => {
 		for (const image of getPicturePuzzleImagesRes.results as types.KeyValue[]) {
 			picturePuzzleImageOptions.value.push(image);
 		}
+		if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+			console.log(
+				"getPicturePuzzleImages: picturePuzzleImageOptions: ",
+				JSON.parse(JSON.stringify(picturePuzzleImageOptions.value)),
+			);
+		}
 	}
 };
 onMounted(async () => {
@@ -409,18 +415,21 @@ onBeforeUnmount(() => {
 								</option>
 							</select>
 						</div>
-						<!-- <div class="picturePuzzleFormItem">
+						<div class="picturePuzzleFormItem">
 							<label for="picturePuzzleImageOption">Image Option</label>
-							<select
-								id="picturePuzzleImageOption"
-								v-model="picturePuzzleImageOption"
-								@change="async () => await displayPicturePuzzle()"
-							>
-								<option v-for="option in picturePuzzleImageOptions" :value="option">
-									{{ option }}
-								</option>
-							</select>
-						</div> -->
+							<div class="radioGroup">
+								<!-- <div class="radio" v-for="option in picturePuzzleImageOptions" :key="option.key as string">
+									<label for="option.key as string" class="label">{{ option.value as string }}</label>
+									<input
+										id="option.key as string"
+										type="radio"
+										:value="option.key as string"
+										v-model="picturePuzzleImageOption"
+										:checked="picturePuzzleImageOption === (option.key as string)"
+									/>
+								</div> -->
+							</div>
+						</div>
 						<div class="picturePuzzleFormItem" v-if="appStore.authenticated == true">
 							<label for="picturePuzzleImage">Image</label>
 							<input
