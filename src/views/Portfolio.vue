@@ -418,16 +418,25 @@ onBeforeUnmount(() => {
 						<div class="picturePuzzleFormItem">
 							<label for="picturePuzzleImageOption">Image Option</label>
 							<div class="radioGroup">
-								<!-- <div class="radio" v-for="option in picturePuzzleImageOptions" :key="option.key as string">
-									<label for="option.key as string" class="label">{{ option.value as string }}</label>
+								<div
+									class="radio"
+									v-for="option in picturePuzzleImageOptions"
+									:key="option.picture_puzzle_image_id as string"
+								>
+									<label for="option.key as string" class="label"
+										><img
+											:src="`data: ${option.mime_type as string};base64, ${option.blob as string}`"
+									/></label>
 									<input
 										id="option.key as string"
 										type="radio"
 										:value="option.key as string"
 										v-model="picturePuzzleImageOption"
-										:checked="picturePuzzleImageOption === (option.key as string)"
+										:checked="
+											picturePuzzleImageOption === (option.picture_puzzle_image_id as number)
+										"
 									/>
-								</div> -->
+								</div>
 							</div>
 						</div>
 						<div class="picturePuzzleFormItem" v-if="appStore.authenticated == true">
