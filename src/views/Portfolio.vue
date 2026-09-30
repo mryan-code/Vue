@@ -513,8 +513,8 @@ onBeforeUnmount(() => {
 					</p>
 					<p>
 						The input number n will be provided as a numeric data type, not a string. For each loop
-						iteration, you must update frequency_map before reducing n." Drag the pseudocode steps below to
-						arrange them into the correct order to create a valid solution for the above task.
+						iteration, you must update frequency_map before reducing n."<br />Drag the pseudocode steps
+						below to arrange them into the correct order to create a valid solution for the above task.
 					</p>
 					<ul>
 						<li>digit = n mod 10</li>
