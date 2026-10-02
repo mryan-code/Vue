@@ -472,6 +472,13 @@ class API {
 		this.returnResponse = await this.apiRequest("POST", "/system-model", requestParams);
 		return this.returnResponse;
 	};
+	generateImage = async (prompt: string): Promise<types.KeyValue> => {
+		const requestParams: types.KeyValue = {};
+		requestParams.prompt = prompt;
+		requestParams.user_id = this.appStore.settings.user_id;
+		this.returnResponse = await this.apiRequest("POST", "/generate-image", requestParams);
+		return this.returnResponse;
+	};
 
 	getSystemModels = async (): Promise<types.KeyValue> => {
 		const requestParams: types.KeyValue = {};
