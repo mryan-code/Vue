@@ -152,7 +152,6 @@ class API {
 		IP: string | null = null,
 		latitude: number | null = null,
 		longitude: number | null = null,
-		visitor_id: string | null = null,
 	): Promise<types.KeyValue> => {
 		const requestParams: types.KeyValue = {};
 		requestParams.email = email;
