@@ -496,6 +496,7 @@ jobs:
           fi
           echo "Launching server process."
           # High-risk operation: start the server in the background while keeping logs for startup failures.
+          # Bug fix: npm run background must stay in the foreground here. If that script backgrounds Vite or sends its output to /dev/null, this PID exits before the port listens and the startup error is discarded.
           nohup npm run background > deploy-start.log 2>&1 &
           server_pid="$!"
           echo "Server process started with PID ${server_pid}."

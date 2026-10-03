@@ -5,7 +5,7 @@
   "scripts": {
     "start": "vite",
     "stop": "node scripts/Stop.js",
-    "background": "vite --mode production >> '/dev/null' 2>&1 &",
+    "background": "vite --mode production",
     "dev": "vite --mode development",
     "build": "vite build",
     "lint": "eslint src",

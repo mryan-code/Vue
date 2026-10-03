@@ -60,6 +60,7 @@ function getDescendantPids(rootPid, processTable) {
 const processTable = parseProcessTable();
 const matchingProcesses = processTable.filter((processInfo) => {
 	// Match both the current Vite dev server and leftover Vue CLI processes during the deploy cutover.
+	// Bug fix: also match node_modules/.bin/vite. That path has no space before "vite" and does not contain "node_modules/vite", so stop missed the live server and the deploy force-killed it.
 	return (
 		processInfo.command.includes(projectRoot) &&
 		!processInfo.command.includes("scripts/Stop.js") &&
@@ -67,7 +68,8 @@ const matchingProcesses = processTable.filter((processInfo) => {
 		(processInfo.command.includes("vue-cli-service") ||
 			/\svite(\.js)?(\s|$)/.test(processInfo.command) ||
 			processInfo.command.includes("vite/bin/vite") ||
-			processInfo.command.includes("node_modules/vite"))
+			processInfo.command.includes("node_modules/vite") ||
+			processInfo.command.includes("node_modules/.bin/vite"))
 	);
 });
 
