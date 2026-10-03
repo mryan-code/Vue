@@ -33,8 +33,8 @@ const loginRequest = async (event: Event) => {
 	event.preventDefault();
 	// const buttonElement = event?.currentTarget as HTMLElement;
 	// await appStore.buttonFeedback(buttonElement, true, false, false);
-	const visitorData = await getData();
-	console.log("visitorData", visitorData);
+	// const visitorData = await getData();
+	// console.log("visitorData", visitorData);
 
 	const loginRequest = await API.login(email.value, password.value);
 	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
@@ -65,13 +65,13 @@ const loginRequest = async (event: Event) => {
 
 const verifyRequest = async (event: Event) => {
 	event.preventDefault();
-	let visitorData = null;
-	try {
-		visitorData = await getData();
-		console.log("visitorData", JSON.parse(JSON.stringify(visitorData)));
-	} catch (error: any) {
-		console.log("error", error.message);
-	}
+	// let visitorData = null;
+	// try {
+	// 	visitorData = await getData();
+	// 	console.log("visitorData", JSON.parse(JSON.stringify(visitorData)));
+	// } catch (error: any) {
+	// 	console.log("error", error.message);
+	// }
 	const userAgent: string | string[] = navigator.userAgent;
 	const IP: string | null = await API.getIP();
 	const geoLocation: types.KeyValue | null = await API.getGeoLocation(IP as string);
@@ -84,7 +84,6 @@ const verifyRequest = async (event: Event) => {
 		IP as string | null,
 		geoLocation?.latitude as number | null,
 		geoLocation?.longitude as number | null,
-		visitorData?.visitor_id as string | null,
 	)) as types.KeyValue;
 	if (verifyRequest.authenticated === true) {
 		// await appStore.buttonFeedback(buttonElement, false, false, false);
