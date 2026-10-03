@@ -1140,6 +1140,13 @@ export const useAppStore = defineStore("auth", {
 		async closeLoginDialogue() {
 			this.loginDialogue = false;
 		},
+		async toggleLoginDialogue() {
+			this.loginDialogue = !this.loginDialogue;
+			if (this.loginDialogue == true) {
+				this.loginDialogueMessage = "";
+				this.loginDialogueError = "";
+			}
+		},
 		async parseError(error: any) {
 			const IP: string | null = await this.API.getIP();
 			const currentUrl: string | null = window.location.href;

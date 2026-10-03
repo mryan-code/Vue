@@ -177,7 +177,7 @@ onUnmounted(async () => {
 								<a
 									class="headerNavItemHeaderLink"
 									href="javascript:void(0)"
-									@click="async (event) => await appStore.login(event)"
+									@click="async (event) => await appStore.toggleLoginDialogue()"
 									v-else
 								>
 									<div class="headerNavItemHeaderIcon">
