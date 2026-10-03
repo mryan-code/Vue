@@ -8,6 +8,7 @@ __pycache__/
 .vscode/*.code-workspace
 node_modules
 dist
+.vercel
 .DS_Store
 .env*
 .vscode/*.code-workspace

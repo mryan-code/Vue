@@ -1,0 +1,108 @@
+name: Deploy to Vercel
+run-name: Deploy to Vercel (${{ github.event.head_commit.timestamp }})
+
+# Frontend publishes to Vercel. The API still runs on the Mac, so this job SSHes there only to restart it after the Vercel deploy succeeds.
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      DEPLOY_HOST: 'dev-domain.duckdns.org'
+      DEPLOY_PORT: '22'
+      DEPLOY_USERNAME: 'inkt'
+      API_PATH: '~/Personal/API'
+      SSH_KEEPALIVE_OPTIONS: "-o ServerAliveInterval=30 -o ServerAliveCountMax=4 -o TCPKeepAlive=yes"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Fail before any remote side effect when the Vercel project is not linked in GitHub secrets.
+      - name: Check Vercel secrets
+        run: |
+          set -euo pipefail
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ] || [ -z "${{ secrets.VERCEL_ORG_ID }}" ] || [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "Set repository secrets VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID before this workflow can deploy." >&2
+            exit 1
+          fi
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      # High-risk operation: downloads production env and project settings from Vercel. Requires human review before use outside this workflow.
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      # High-risk operation: builds the production frontend with the pulled Vercel env so VUE_APP_* values are baked into the Vite bundle.
+      - name: Build for Vercel
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      # High-risk operation: uploads the prebuilt frontend to the Vercel production deployment.
+      - name: Deploy to Vercel
+        id: vercel_deploy
+        run: |
+          set -euo pipefail
+          deployment_url="$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "Vercel deployment URL: ${deployment_url}"
+          echo "url=${deployment_url}" >> "$GITHUB_OUTPUT"
+
+      - name: Connect to HOST via SSH
+        run: |
+          echo "Preparing HOST SSH key."
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          echo "HOST SSH key is ready."
+
+      - name: SSH network preflight
+        run: |
+          set -euo pipefail
+          echo "Validating TCP reachability to ${DEPLOY_HOST}:${DEPLOY_PORT}."
+          # High-risk operation: validates remote network connectivity before the API restart to avoid a partial deploy side effect.
+          if ! timeout 10 bash -c "</dev/tcp/${DEPLOY_HOST}/${DEPLOY_PORT}"; then
+            echo "Unable to reach ${DEPLOY_HOST}:${DEPLOY_PORT} from GitHub runner." >&2
+            echo "Check HOST firewall/security group/NAT and ensure DEPLOY_PORT is correct." >&2
+            echo "Vercel deployment already published: ${{ steps.vercel_deploy.outputs.url }}" >&2
+            exit 1
+          fi
+          echo "TCP preflight passed."
+
+      # Restart the API on the Mac after the frontend is live on Vercel.
+      - name: Restart the API server
+        run: |
+          set -euo pipefail
+          echo "Restarting API server on HOST."
+          # High-risk operation: this restarts the remote HOST API server after the Vercel deploy. Requires human review.
+          ssh \
+            $SSH_KEEPALIVE_OPTIONS \
+            -p "$DEPLOY_PORT" \
+            -i "$HOME/.ssh/deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=no \
+            -o BatchMode=yes \
+            -o PasswordAuthentication=no \
+            "$DEPLOY_USERNAME@$DEPLOY_HOST" \
+            "API_PATH='$API_PATH' bash -l -s" <<'REMOTE_COMMAND'
+          set -euo pipefail
+          echo "Restarting API server on HOST."
+          api_path="${API_PATH/#\~/$HOME}"
+          cd "$api_path"
+          if [ -f "scripts/stop-pm2.js" ]; then
+            npm run stop:pm2 || true
+          fi
+          npm run stop || true
+          if [ -f "scripts/start-pm2.js" ]; then
+            npm run start:pm2 || nohup npm run start > deploy-start.log 2>&1 &
+          else
+            nohup npm run start > deploy-start.log 2>&1 &
+          fi
+          REMOTE_COMMAND
