@@ -292,7 +292,7 @@ onUnmounted(async () => {
 						</v-expansion-panels>
 						<router-view />
 						<WSSDialogue v-if="appStore.authenticated == true" />
-						<LoginDialogue v-if="appStore.loginDialogue == true" />
+						<LoginDialogue v-if="appStore.loginDialogue == true && appStore.authenticated == false" />
 					</div>
 				</Transition>
 			</div>
