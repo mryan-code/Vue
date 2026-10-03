@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Component } from "vue";
+import { onBeforeUnmount, onMounted, ref, type Component } from "vue";
 import { ArrowDown, Bot, Code, Cpu, LogIn, Puzzle, Search, Server, Sparkles } from "@lucide/vue";
 
 // The home page is now a landing in the shape of the Freebuff desktop page.
@@ -86,6 +86,111 @@ const pages: LandingPage[] = [
 	},
 ];
 
+type LandingStar = {
+	left: string;
+	top: string;
+	size: string;
+	glow: string;
+	dur: string;
+	delay: string;
+};
+
+type LandingShot = {
+	left: string;
+	top: string;
+	dx: string;
+	dy: string;
+	dur: string;
+	delay: string;
+};
+
+// Stable 0-1 value so the star field does not jump on each render.
+const mix = ( seed: number ) => {
+	const value = Math.sin( seed * 127.1 ) * 43758.5453;
+	return value - Math.floor( value );
+};
+
+// A star in either the hero night sky or the cloudy sky under the chart.
+const makeStar = ( index: number , top: string ): LandingStar => {
+	const size = mix( index + 3 ) > 0.72 ? 3 : 2;
+	return {
+		left: `${( mix( index + 1 ) * 92 + 4 ).toFixed( 2 )}%`,
+		top: top,
+		size: `${size}px`,
+		glow: `${size + 2}px`,
+		dur: `${( 3.2 + mix( index + 21 ) * 3.4 ).toFixed( 2 )}s`,
+		delay: `${( mix( index + 31 ) * 4 ).toFixed( 2 )}s`,
+	};
+};
+
+// vh, not a percent of the whole page, so the first screen is actually a sky.
+const stars: LandingStar[] = Array.from( { length: 28 } , ( _star , index ) => {
+	return makeStar( index , `${( 5 + mix( index + 11 ) * 68 ).toFixed( 1 )}vh` );
+} );
+
+// The band under the chart. These sit on the cloud photograph, above the hills.
+const groundStars: LandingStar[] = Array.from( { length: 16 } , ( _star , index ) => {
+	const seed = index + 80;
+	return makeStar( seed , `${( 8 + mix( seed + 11 ) * 44 ).toFixed( 1 )}%` );
+} );
+
+// Streaks that cross the hero, then wait before repeating.
+const shots: LandingShot[] = Array.from( { length: 6 } , ( _shot , index ) => {
+	return {
+		left: `${( 8 + index * 14 ) % 78}%`,
+		top: `${6 + index * 7}%`,
+		dx: `${300 + Math.round( mix( index + 41 ) * 160 )}px`,
+		dy: `${150 + Math.round( mix( index + 51 ) * 110 )}px`,
+		dur: `${( 6 + mix( index + 61 ) * 2 ).toFixed( 1 )}s`,
+		delay: `${( 0.4 + index * 1.15 ).toFixed( 1 )}s`,
+	};
+} );
+
+// Scroll shifts. Far layers move more than near ones, which is the parallax.
+const skyShift = ref( 0 );
+const hillShift = ref( 0 );
+const bushShift = ref( 0 );
+let parallaxFrame = 0;
+let parallaxListening = false;
+
+const updateParallax = () => {
+	parallaxFrame = 0;
+	const y = window.scrollY;
+	skyShift.value = y * 0.32;
+	hillShift.value = y * 0.16;
+	bushShift.value = y * 0.07;
+};
+
+const onScroll = () => {
+	if ( parallaxFrame )
+	{
+		return;
+	}
+	parallaxFrame = window.requestAnimationFrame( updateParallax );
+};
+
+onMounted( () => {
+	const reduceMotion = window.matchMedia( "(prefers-reduced-motion: reduce)" ).matches;
+	if ( reduceMotion )
+	{
+		return;
+	}
+	parallaxListening = true;
+	window.addEventListener( "scroll" , onScroll , { passive: true } );
+	updateParallax();
+} );
+
+onBeforeUnmount( () => {
+	if ( parallaxListening )
+	{
+		window.removeEventListener( "scroll" , onScroll );
+	}
+	if ( parallaxFrame )
+	{
+		window.cancelAnimationFrame( parallaxFrame );
+	}
+} );
+
 const faqs: LandingFaq[] = [
 	{
 		number: "01",
@@ -117,14 +222,62 @@ const faqs: LandingFaq[] = [
 
 <template>
 	<div class="landing">
-		<div class="landingDots" aria-hidden="true">
-			<span style="top: 18%; left: 12%"></span>
-			<span style="top: 32%; left: 78%"></span>
-			<span style="top: 46%; left: 22%"></span>
-			<span style="top: 58%; left: 88%"></span>
-			<span style="top: 70%; left: 8%"></span>
-			<span style="top: 24%; left: 64%"></span>
+		<!-- Stars, streaks, and hill layers. They drift at different speeds while the page scrolls. -->
+		<div class="landingScene" aria-hidden="true">
+			<div class="landingWash" :style="{ transform: `translate3d(0, ${skyShift}px, 0)` }"></div>
+			<span
+				class="landingStar"
+				v-for="(star, index) in stars"
+				:key="`star-${index}`"
+				:style="{
+					left: star.left,
+					top: star.top,
+					width: star.size,
+					height: star.size,
+					'--glow': star.glow,
+					'--dur': star.dur,
+					'--delay': star.delay,
+					transform: `translate3d(0, ${skyShift}px, 0)`,
+				}"
+			></span>
+			<span
+				class="landingShootWrap"
+				v-for="(shot, index) in shots"
+				:key="`shot-${index}`"
+				:style="{
+					left: shot.left,
+					top: shot.top,
+					transform: `translate3d(0, ${skyShift * 0.5}px, 0)`,
+				}"
+			>
+				<span
+					class="landingShoot"
+					:style="{
+						'--dx': shot.dx,
+						'--dy': shot.dy,
+						'--dur': shot.dur,
+						'--delay': shot.delay,
+					}"
+				>
+					<span class="landingShootTrail"></span>
+				</span>
+			</span>
+			<!--
+				Deprecated code: solid green silhouettes. They sat on top of the photograph as a hard edge.
+				The green is now the atmosphere wash inside .landingGround, feathered into the sky and hills.
+			-->
 		</div>
+		<!--
+			Deprecated code: six static dots. Replaced by the twinkling field and shooting stars above.
+			<div class="landingDots" aria-hidden="true">
+				<span style="top: 18%; left: 12%"></span>
+				<span style="top: 32%; left: 78%"></span>
+				<span style="top: 46%; left: 22%"></span>
+				<span style="top: 58%; left: 88%"></span>
+				<span style="top: 70%; left: 8%"></span>
+				<span style="top: 24%; left: 64%"></span>
+			</div>
+		-->
 
 		<section class="landingHero">
 			<h1 class="landingHeroTitle">
@@ -160,6 +313,50 @@ const faqs: LandingFaq[] = [
 				</div>
 			</div>
 		</section>
+
+		<!--
+			Green haze, sky, hills, and foreground, stacked the way Freebuff does.
+			The top of the stack fades into the page so the green does not end in a hard line.
+		-->
+		<div class="landingGround" aria-hidden="true">
+			<div class="landingGroundWash" :style="{ transform: `translate3d(0, ${skyShift * 0.12}px, 0)` }"></div>
+			<img
+				class="landingLayer landingSkyBg"
+				src="/landing/sky-bg.webp"
+				alt=""
+				:style="{ transform: `translate3d(0, ${skyShift * 0.18}px, 0)` }"
+			/>
+			<span
+				class="landingStar"
+				v-for="(star, index) in groundStars"
+				:key="`ground-star-${index}`"
+				:style="{
+					left: star.left,
+					top: star.top,
+					width: star.size,
+					height: star.size,
+					'--glow': star.glow,
+					'--dur': star.dur,
+					'--delay': star.delay,
+					transform: `translate3d(0, ${skyShift * 0.08}px, 0)`,
+				}"
+			></span>
+			<img
+				class="landingLayer landingHillsPhoto"
+				src="/landing/hills-bg.webp"
+				alt=""
+				:style="{ transform: `translate3d(0, ${hillShift * 0.35}px, 0)` }"
+			/>
+			<img
+				class="landingLayer landingBushes"
+				src="/landing/bushes-fg.webp"
+				alt=""
+				:style="{ transform: `translate3d(0, ${bushShift * 0.2}px, 0)` }"
+			/>
+			<!-- Sage veil so the photograph comes out of the same green as the page, then falls back to the dunes. -->
+			<div class="landingGreenVeil"></div>
+			<div class="landingGroundFade"></div>
+		</div>
 
 		<!-- <section class="landingPages">
 			<p class="landingEyebrow">Pages</p>
@@ -223,19 +420,153 @@ const faqs: LandingFaq[] = [
 	overflow: hidden;
 }
 
-.landingDots {
+// Full-page night scene. Layers are shifted from the scroll handler so nearer hills lag less.
+.landingScene {
 	position: absolute;
 	inset: 0;
-	height: 70vh;
+	z-index: 0;
 	pointer-events: none;
-	span {
-		position: absolute;
-		width: 3px;
-		height: 3px;
-		border-radius: 50%;
-		background: var(--headline);
-		opacity: 0.45;
+	overflow: hidden;
+}
+
+.landingWash {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -8vh;
+	height: 78vh;
+	background: linear-gradient(
+		to bottom,
+		transparent 0%,
+		rgba(16, 36, 40, 0.55) 42%,
+		rgba(7, 8, 10, 0) 100%
+	);
+	will-change: transform;
+}
+
+.landingStar {
+	position: absolute;
+	border-radius: 999px;
+	background: #ffffff;
+	box-shadow: 0 0 var(--glow) rgba(255, 255, 255, 0.85);
+	animation: landing-twinkle var(--dur) ease-in-out var(--delay) infinite;
+	will-change: transform, opacity;
+}
+
+.landingShootWrap {
+	position: absolute;
+	will-change: transform;
+}
+
+.landingShoot {
+	display: block;
+	opacity: 0;
+	animation: landing-shoot var(--dur) ease-out var(--delay) infinite;
+	will-change: transform, opacity;
+}
+
+.landingShootTrail {
+	display: block;
+	width: 110px;
+	height: 1px;
+	transform: rotate(28deg);
+	transform-origin: left center;
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.85) 90%, #ffffff 100%);
+	box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+}
+
+// Deprecated code: flat green hill silhouettes.
+// .landingHills {
+// 	position: absolute;
+// 	left: 0;
+// 	width: 120%;
+// 	margin-left: -10%;
+// 	height: 34vh;
+// 	min-height: 160px;
+// 	will-change: transform;
+// }
+// .landingHillsFar {
+// 	top: 54vh;
+// 	color: #24322c;
+// 	opacity: 0.95;
+// }
+// .landingHillsNear {
+// 	top: 68vh;
+// 	height: 28vh;
+// 	color: #101614;
+// }
+
+@keyframes landing-twinkle {
+	0%,
+	100% {
+		opacity: 0.35;
 	}
+	50% {
+		opacity: 1;
+	}
+}
+
+@keyframes landing-shoot {
+	0% {
+		opacity: 0;
+		transform: translate3d(0, 0, 0);
+	}
+	2% {
+		opacity: 1;
+	}
+	9% {
+		opacity: 0;
+		transform: translate3d(var(--dx), var(--dy), 0);
+	}
+	100% {
+		opacity: 0;
+		transform: translate3d(var(--dx), var(--dy), 0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.landingStar,
+	.landingShoot {
+		animation: none;
+	}
+	.landingShoot {
+		opacity: 0;
+	}
+}
+
+:global([data-theme="light"]) .landingWash {
+	background: linear-gradient(to bottom, transparent 0%, rgba(95, 115, 84, 0.16) 46%, transparent 100%);
+}
+
+:global([data-theme="light"]) .landingStar {
+	background: #3e4d36;
+	box-shadow: 0 0 var(--glow) rgba(62, 77, 54, 0.45);
+}
+
+:global([data-theme="light"]) .landingShootTrail {
+	background: linear-gradient(90deg, rgba(62, 77, 54, 0) 0%, rgba(62, 77, 54, 0.85) 100%);
+	box-shadow: none;
+}
+
+// Deprecated code: the solid hill colors.
+// :global([data-theme="light"]) .landingHillsFar {
+// 	color: #c5d0c0;
+// }
+// :global([data-theme="light"]) .landingHillsNear {
+// 	color: #aeb9a8;
+// }
+
+:global([data-theme="light"]) .landingGroundWash {
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #d7e0d0 36%, #c5d0c0 62%, rgba(255, 255, 255, 0) 100%);
+}
+
+:global([data-theme="light"]) .landingGreenVeil {
+	background: linear-gradient(to bottom, rgba(197, 208, 192, 0.1) 0%, rgba(140, 160, 126, 0.35) 24%, transparent 64%);
+	mix-blend-mode: multiply;
+}
+
+:global([data-theme="light"]) .landingGroundFade {
+	background: linear-gradient(to bottom, var(--body-bg) 0%, transparent 22%, transparent 52%, var(--body-bg) 86%);
 }
 
 .landingHero,
@@ -244,6 +575,7 @@ const faqs: LandingFaq[] = [
 .landingFaq,
 .landingFooter {
 	position: relative;
+	z-index: 1;
 	max-width: 860px;
 	margin: 0 auto;
 	padding: 0 24px;
@@ -336,7 +668,115 @@ const faqs: LandingFaq[] = [
 }
 
 .landingProofWrap {
-	padding-bottom: 72px;
+	padding-bottom: 0;
+}
+
+// One landscape. The wash is the green, and each photo is masked so it fades into that green and into the page.
+.landingGround {
+	position: relative;
+	z-index: 0;
+	height: 78vh;
+	min-height: 440px;
+	margin-top: -8vh;
+	margin-bottom: -14vh;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.landingGroundWash {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 34%;
+	height: 36%;
+	background: linear-gradient(
+		to bottom,
+		rgba(7, 11, 17, 0) 0%,
+		rgba(16, 31, 35, 0.55) 40%,
+		rgba(23, 42, 41, 0.4) 70%,
+		rgba(7, 10, 11, 0) 100%
+	);
+	will-change: transform;
+}
+
+.landingLayer {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	object-fit: cover;
+	user-select: none;
+	pointer-events: none;
+	will-change: transform;
+}
+
+.landingSkyBg {
+	z-index: 1;
+	top: 0;
+	height: auto;
+	// The file is a thin cloud band inside a black frame. This ratio crops that frame off
+	// so the dark under the clouds is the page sky, where the stars are, instead of a black bar.
+	aspect-ratio: 1400 / 150;
+	object-position: center 20%;
+	opacity: 0.88;
+	filter: brightness(0.82) saturate(0.78);
+	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 58%, transparent 100%);
+	mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 58%, transparent 100%);
+}
+
+.landingGround .landingStar {
+	z-index: 2;
+}
+
+.landingHillsPhoto {
+	z-index: 3;
+	top: 34%;
+	height: 58%;
+	object-position: center 28%;
+	filter: brightness(0.9) contrast(1.05) saturate(0.9);
+	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 72%, transparent 100%);
+	mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 72%, transparent 100%);
+}
+
+.landingBushes {
+	z-index: 4;
+	bottom: -4%;
+	height: 28%;
+	object-position: center bottom;
+	transform-origin: center bottom;
+	filter: brightness(0.55) saturate(0.8);
+	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 26%, #000 68%, transparent 100%);
+	mask-image: linear-gradient(to bottom, transparent 0%, #000 26%, #000 68%, transparent 100%);
+}
+
+// The green sits on the ridge where the sky meets the hills, and leaves the sky itself clear.
+.landingGreenVeil {
+	position: absolute;
+	z-index: 5;
+	left: 0;
+	right: 0;
+	top: 42%;
+	bottom: 0;
+	background: linear-gradient(
+		to bottom,
+		rgba(48, 72, 56, 0) 0%,
+		rgba(48, 72, 56, 0.4) 24%,
+		rgba(90, 112, 82, 0.2) 48%,
+		rgba(90, 112, 82, 0) 78%
+	);
+	mix-blend-mode: soft-light;
+}
+
+.landingGroundFade {
+	position: absolute;
+	z-index: 6;
+	inset: 0;
+	background: linear-gradient(
+		to bottom,
+		var(--body-bg) 0%,
+		transparent 8%,
+		transparent 62%,
+		var(--body-bg) 90%
+	);
 }
 
 .landingProof {
