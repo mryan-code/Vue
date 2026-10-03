@@ -84,7 +84,7 @@ onBeforeUnmount(() => {});
 			</div>
 		</Transition>
 	</div>
-	<div class="imageContainer">
+	<div class="imageContainer" v-if="aiImageResponse.length > 0">
 		<img v-for="image in aiImageResponse" :src="`data:${image.image_mime};base64,${image.image_base64}`" />
 	</div>
 </template>
