@@ -94,11 +94,24 @@ body,
 	top: 0;
 	left: 0;
 	z-index: 1000;
-	border-bottom: 1.5px solid var(--header-accent);
+	// Deprecated code: full-width bar with a bottom border. The header is now a transparent floating row.
+	// border-bottom: 1.5px solid var(--header-accent);
+	// background-color: var(--header-bg);
+	border-bottom: none;
 	transition: all var(--duration) var(--function);
-	background-color: var(--header-bg);
-	color: var(--primary-text);
-	padding: var(--padding);
+	background-color: transparent;
+	// Soft fade so page content does not show through the logo and controls while scrolling.
+	background-image: linear-gradient(
+		to bottom,
+		var(--body-bg) 0%,
+		var(--body-bg) 88%,
+		transparent 100%
+	);
+	color: var(--headline);
+	padding: 16px 22px;
+	box-sizing: border-box;
+	// The bar itself should not block the page. Logo and controls opt back in.
+	pointer-events: none;
 	// box-shadow: var(--header-drop-shadow);
 
 	// Single Transition root; keep logo + nav spaced like #header's previous direct children
@@ -117,6 +130,7 @@ body,
 		align-items: center;
 		width: 100%;
 		height: 100%;
+		pointer-events: none;
 	}
 
 	#headerNavLeft {
@@ -346,25 +360,27 @@ body,
 		height: 100%;
 		transition: all var(--duration) var(--function);
 		gap: var(--padding);
+		pointer-events: auto;
 
 		#statusSelect {
 			box-shadow: none;
 		}
 		.headerNavItemHeaderIcon {
 			svg {
-				stroke: var(--primary-text);
-				height: 40px;
-				width: 40px;
+				// Quiet icon buttons sit beside the page pill, so they stay small and use the headline color.
+				stroke: var(--headline);
+				height: 18px;
+				width: 18px;
 			}
 			path,
 			circle {
-				stroke: var(--primary-text);
-				fill: var(--secondary-accent);
-				stroke-width: 1;
+				stroke: var(--headline);
+				fill: none;
+				stroke-width: 1.75;
 			}
 			rect {
-				stroke: var(--primary-text);
-				stroke-width: 1;
+				stroke: var(--headline);
+				stroke-width: 1.75;
 			}
 		}
 		#notifications {
@@ -457,7 +473,7 @@ body,
 
 			a {
 				display: inline-block;
-				color: var(--primary-text);
+				color: var(--headline);
 				text-align: center;
 			}
 
@@ -496,14 +512,17 @@ body,
 							object-fit: contain;
 						}
 						svg {
-							height: 100%;
+							// Deprecated code: icons stretched to the full header height.
+							// height: 100%;
+							height: 18px;
+							width: 18px;
 							filter: none;
-							stroke: var(--primary);
+							stroke: var(--headline);
 							text-shadow: none;
-							circle,
-							rect,
-							path {
-								stroke: var(--primary);
+						circle,
+						rect,
+						path {
+							stroke: var(--headline);
 
 								filter: none;
 								text-shadow: none;
@@ -823,6 +842,46 @@ body,
 	}
 }
 
+// Page switcher, styled like Freebuff's product pill. Quiet theme and auth icons sit beside it.
+#header #headerNavRight .headerNavRightItem {
+	height: auto;
+	align-self: center;
+}
+#header #headerNavRight .headerNavItemHeader,
+#header #headerNavRight .headerNavItemHeaderLink,
+#header #headerNavRight .headerNavItemHeaderIcon {
+	height: auto;
+}
+#header .headerPagePill {
+	pointer-events: auto;
+	display: -webkit-inline-flex;
+	display: inline-flex;
+	-webkit-align-items: center;
+	align-items: center;
+	gap: 8px;
+	height: auto;
+	background-color: var(--card-bg);
+	border: 1px solid var(--card-border);
+	color: var(--headline);
+	border-radius: 999px;
+	padding: 8px 14px;
+	text-decoration: none;
+	font-family: var(--body-font-family);
+	font-size: 0.95rem;
+	font-weight: 500;
+	line-height: 1;
+	box-shadow: none;
+	svg {
+		width: 16px;
+		height: 16px;
+		stroke: var(--headline);
+	}
+}
+#header .headerPagePillLabel {
+	color: var(--headline);
+	-webkit-text-stroke: 0;
+}
+
 #sideBar {
 	height: calc(100vh - var(--header-height));
 	width: var(--menu-width);
@@ -1098,6 +1157,7 @@ body,
 	#mainContent {
 		display: block;
 		box-sizing: border-box;
+		width: 100%;
 		padding: var(--padding);
 		// min-width: 100vw;
 		// min-height: 100vh;
@@ -1136,8 +1196,10 @@ body,
 		height var(--duration) var(--function);
 	position: fixed !important;
 	top: calc(var(--header-height) + var(--padding)) !important;
-	right: 0;
-	opacity: 0;
+	right: 12px;
+	// Deprecated code: the menu started invisible and never faded in with transition="none".
+	// opacity: 0;
+	opacity: 1;
 	box-sizing: content-box !important;
 	max-height: 80vh;
 	.headerNavItemArrow {
@@ -1273,11 +1335,12 @@ a {
 		margin-left: calc(var(--padding) * 3);
 	}
 }
-#visual-resume #header,
-#login #header,
-#error #header {
-	display: none !important;
-}
+// Deprecated code: login, error, and the visual resume hid the header. It now shows on every route.
+// #visual-resume #header,
+// #login #header,
+// #error #header {
+// 	display: none !important;
+// }
 #visual-resume #main,
 #login #main,
 #error #main {
@@ -1288,7 +1351,8 @@ a {
 	max-width: 100vw !important;
 	min-height: 100vh !important;
 	transition: none var(--duration) var(--function) !important;
-	padding: 0px !important;
+	// Keep the same header offset as the rest of the app.
+	padding: var(--header-height) 0 0 0 !important;
 	margin: 0px !important;
 }
 #visual-resume #mainContent,
@@ -1309,6 +1373,7 @@ a {
 }
 /* --- misc --- */
 .logofull {
+	pointer-events: auto;
 	display: -webkit-flex;
 	display: flex;
 	-webkit-flex-direction: row;
@@ -1353,8 +1418,10 @@ a {
 		img {
 			background-color: transparent;
 			display: inline-block;
+			// Deprecated code: the logo filled the old 85px bar.
 			// width: calc(var(--collapsed-menu-width) - (var(--padding) * 2));
-			width: 83px;
+			// width: 83px;
+			width: 36px;
 			height: auto;
 		}
 	}
@@ -1381,15 +1448,18 @@ a {
 			display: inline-block;
 			padding: 0px;
 			margin: 0px;
-			width: 100%;
+			width: auto;
 
-			font-size: 1.5em;
+			font-family: var(--heading-font-family);
+			font-size: 1.05em;
+			font-weight: 600;
 			// text-transform: uppercase;
-			// color: var(--inverted-text);
-			text-shadow: var(--body-text-shadow);
+			color: var(--headline);
+			-webkit-text-stroke: 0;
+			text-shadow: none;
 			// -webkit-text-stroke: 0px var(--primary-accent) !important;
 			line-height: 1;
-			text-align: center;
+			text-align: left;
 		}
 
 		h1:nth-child(1) {
@@ -1417,6 +1487,7 @@ h3:not(pre),
 h4:not(pre),
 h5:not(pre),
 h6:not(pre) {
+	font-family: var(--heading-font-family);
 	color: var(--primary);
 	-webkit-text-stroke: 0.2px var(--primary-accent);
 }

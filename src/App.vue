@@ -10,7 +10,7 @@ import moment from "moment-timezone";
 import { useAppStore } from "@/store/app";
 import { storeToRefs } from "pinia";
 import Lucide from "@/components/Lucide.vue";
-import { Menu, Moon, Sun, ChevronDown, ChevronUp, LogOut, LogIn } from "@lucide/vue";
+import { LayoutGrid, Moon, Sun, ChevronDown, LogOut, LogIn } from "@lucide/vue";
 import WSSDialogue from "@/components/WSSDialogue.vue";
 import MainMenu from "@/components/MainMenu.vue";
 
@@ -187,16 +187,17 @@ onUnmounted(async () => {
 							</div>
 						</div>
 						<div class="headerNavRightItem noselect">
-							<div class="headerNavItemHeader">
-								<a
-									class="headerNavItemHeaderLink"
-									href="javascript:void(0)"
-									id="menu"
-									@click="async (event) => await appStore.toggleHeaderMenu(event, 'menu')"
-								>
-									<div class="headerNavItemHeaderIcon"><Menu /></div>
-								</a>
-							</div>
+							<!-- Page pill replaces the hamburger. It still opens the existing page menu. -->
+							<a
+								class="headerPagePill"
+								href="javascript:void(0)"
+								id="menu"
+								@click="async (event) => await appStore.toggleHeaderMenu(event, 'menu')"
+							>
+								<LayoutGrid />
+								<span class="headerPagePillLabel">{{ router.currentRoute.value.name }}</span>
+								<ChevronDown />
+							</a>
 						</div>
 						<v-dialog
 							activator="#menu"

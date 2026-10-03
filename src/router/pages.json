@@ -96,5 +96,19 @@
 		},
 		"component": "../views/OSINT.vue",
 		"props": true
+	},
+	{
+		"path": "/ai",
+		"name": "AI",
+		"meta": {
+			"page_id": "8",
+			"auth_required": 3,
+			"icon": null,
+			"auth_level": 3,
+			"slug": "ai",
+			"location": 1
+		},
+		"component": "../views/AI.vue",
+		"props": true
 	}
 ]
