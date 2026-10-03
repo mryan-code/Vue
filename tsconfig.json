@@ -13,12 +13,14 @@
 		"useDefineForClassFields": true,
 		"sourceMap": true,
 		"resolveJsonModule": true,
+		// Vite emits the bundle. Without noEmit, tsc writes .js files beside the sources.
+		"noEmit": true,
 		"types": ["vite/client", "node"],
 		"paths": {
-			"@/*": ["./src/*"],
-			// @lucide/vue lists types as "typings" with no "exports"; bundler resolution
-			// otherwise binds to dist/cjs/lucide-vue.js and raises TS7016.
-			"@lucide/vue": ["./node_modules/@lucide/vue/dist/lucide-vue.d.ts"]
+			"@/*": ["./src/*"]
+			// Deprecated: mapping @lucide/vue to dist/lucide-vue.d.ts resolved a relative path
+			// and dropped the package id. The package "typings" field already resolves that file.
+			// "@lucide/vue": ["./node_modules/@lucide/vue/dist/lucide-vue.d.ts"]
 		},
 		"lib": ["esnext", "dom", "dom.iterable", "scripthost"]
 	},

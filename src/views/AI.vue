@@ -4,6 +4,7 @@ import { useSpeechRecognition } from "@vueuse/core";
 import APIClass from "@/classes/API";
 import { useAppStore } from "@/store/app";
 import * as types from "@/types";
+import { isJSON } from "@/validation/isJSON";
 import { SquarePen, Trash, Copy, Mic, MicOff, Cog, Loader } from "@lucide/vue";
 import moment from "moment-timezone";
 
@@ -14,6 +15,7 @@ type AiImageResponse = types.KeyValue & {
 
 const API = new APIClass();
 const appStore = useAppStore();
+const aiTab = ref("image");
 const aiIsLoading = ref(false);
 const aiImageResponse = ref<AiImageResponse[]>([]);
 const aiPrompt = ref("");
@@ -64,27 +66,330 @@ const aiRequest = async () => {
 	}
 };
 
+const switchAiTab = async (tab: string) => {
+	aiTab.value = tab;
+};
+
+const realtimeVideo = ref<HTMLVideoElement | null>(null);
+const realtimeCanvas = ref<HTMLCanvasElement | null>(null);
+const realtimeRunning = ref(false);
+const realtimeStarting = ref(false);
+const realtimeError = ref("");
+const realtimeScene = ref("");
+const realtimePeople = ref("");
+const realtimeEmotion = ref("");
+const realtimeHeard = ref("");
+const realtimeTranscript = ref("");
+const realtimeReply = ref("");
+let realtimeSocket: WebSocket | null = null;
+let realtimeStream: MediaStream | null = null;
+let realtimeAudio: AudioContext | null = null;
+let realtimeFrameTimer: number | null = null;
+
+const readUserJwt = (): string => {
+	const raw = localStorage.getItem(appStore.loginTokenKey);
+	if (!raw || !isJSON(raw)) {
+		return "";
+	}
+	const parsed = JSON.parse(raw);
+	return typeof parsed.user_jwt === "string" ? parsed.user_jwt : "";
+};
+
+const realtimeSocketUrl = (): string => {
+	const vars = appStore.globalVars;
+	return `${vars.WSS_PROTOCOL}://${vars.WSS_HOST}:${vars.WSS_PORT}/realtime`;
+};
+
+const sendRealtimePacket = (kind: number, payload: Uint8Array) => {
+	if (!realtimeSocket || realtimeSocket.readyState !== WebSocket.OPEN) {
+		return;
+	}
+	const packet = new Uint8Array(payload.byteLength + 1);
+	packet[0] = kind;
+	packet.set(payload, 1);
+	realtimeSocket.send(packet);
+};
+
+const captureRealtimeFrame = () => {
+	const video = realtimeVideo.value;
+	const canvas = realtimeCanvas.value;
+	if (!video || !canvas || video.readyState < 2) {
+		return;
+	}
+	if (canvas.width !== 640) {
+		canvas.width = 640;
+	}
+	if (canvas.height !== 480) {
+		canvas.height = 480;
+	}
+	const context = canvas.getContext("2d");
+	if (!context) {
+		return;
+	}
+	context.drawImage(video, 0, 0, 640, 480);
+	canvas.toBlob(
+		(blob) => {
+			if (!blob) {
+				return;
+			}
+			blob.arrayBuffer().then((buffer) => {
+				sendRealtimePacket(0x01, new Uint8Array(buffer));
+			});
+		},
+		"image/jpeg",
+		0.7,
+	);
+};
+
+const startRealtimeAudio = async (stream: MediaStream) => {
+	const audioContext = new AudioContext();
+	realtimeAudio = audioContext;
+	await audioContext.audioWorklet.addModule("/realtime-pcm-processor.js");
+	const source = audioContext.createMediaStreamSource(stream);
+	const node = new AudioWorkletNode(audioContext, "realtime-pcm-processor");
+	node.port.onmessage = (event: MessageEvent<ArrayBuffer>) => {
+		sendRealtimePacket(0x02, new Uint8Array(event.data));
+	};
+	source.connect(node);
+};
+
+const handleRealtimeMessage = (event: MessageEvent) => {
+	if (typeof event.data !== "string" || !isJSON(event.data)) {
+		return;
+	}
+	const message = JSON.parse(event.data);
+	if (message.type === "evaluation") {
+		realtimeScene.value = message.scene || "";
+		realtimePeople.value = message.people || "";
+		realtimeEmotion.value = message.emotion || "";
+		realtimeHeard.value = message.heard || "";
+		return;
+	}
+	if (message.type === "transcript") {
+		realtimeTranscript.value = message.text || "";
+		return;
+	}
+	if (message.type === "reply") {
+		realtimeReply.value = typeof message.response === "string" ? message.response : "";
+		appStore.avatarResponse = realtimeReply.value;
+		if (message.tts?.base64) {
+			appStore.avatarTTS = JSON.parse(JSON.stringify(message.tts));
+		} else {
+			appStore.avatarTTS = null;
+		}
+		return;
+	}
+	if (message.type === "error") {
+		realtimeError.value = message.error || "Realtime evaluation failed";
+	}
+};
+
+const stopRealtime = () => {
+	const socket = realtimeSocket;
+	realtimeSocket = null;
+	if (socket) {
+		socket.onmessage = null;
+		socket.onclose = null;
+		socket.onerror = null;
+		if (socket.readyState === WebSocket.OPEN) {
+			socket.send(JSON.stringify({ type: "stop" }));
+		}
+		socket.close();
+	}
+	if (realtimeFrameTimer !== null) {
+		window.clearInterval(realtimeFrameTimer);
+		realtimeFrameTimer = null;
+	}
+	if (realtimeAudio) {
+		void realtimeAudio.close();
+		realtimeAudio = null;
+	}
+	if (realtimeStream) {
+		for (const track of realtimeStream.getTracks()) {
+			track.stop();
+		}
+		realtimeStream = null;
+	}
+	if (realtimeVideo.value) {
+		realtimeVideo.value.srcObject = null;
+	}
+	realtimeRunning.value = false;
+};
+
+// Live camera frames and microphone audio are streamed to /realtime.
+// Replies reuse the avatar TTS player. Frames and audio are not stored in the page.
+const startRealtime = async () => {
+	if (realtimeRunning.value || realtimeStarting.value) {
+		return;
+	}
+	realtimeStarting.value = true;
+	realtimeError.value = "";
+	const userJwt = readUserJwt();
+	if (!userJwt) {
+		realtimeError.value = "Sign in before starting the camera.";
+		realtimeStarting.value = false;
+		return;
+	}
+	stopRealtime();
+	try {
+		const stream = await navigator.mediaDevices.getUserMedia({
+			video: true,
+			audio: true,
+		});
+		realtimeStream = stream;
+		if (realtimeVideo.value) {
+			realtimeVideo.value.srcObject = stream;
+			await realtimeVideo.value.play();
+		}
+		const socket = new WebSocket(realtimeSocketUrl());
+		realtimeSocket = socket;
+		await new Promise<void>((resolve, reject) => {
+			socket.onopen = () => {
+				resolve();
+			};
+			socket.onerror = () => {
+				reject(new Error("Realtime socket failed"));
+			};
+		});
+		socket.onmessage = handleRealtimeMessage;
+		socket.onerror = () => {
+			realtimeError.value = "Realtime socket failed";
+		};
+		socket.onclose = () => {
+			if (realtimeSocket === socket) {
+				stopRealtime();
+			}
+		};
+		socket.send(JSON.stringify({ type: "start", user_jwt: userJwt }));
+		await startRealtimeAudio(stream);
+		realtimeFrameTimer = window.setInterval(captureRealtimeFrame, 500);
+		realtimeRunning.value = true;
+	} catch (error) {
+		stopRealtime();
+		realtimeError.value = error instanceof Error ? error.message : "Could not start the camera";
+	} finally {
+		realtimeStarting.value = false;
+	}
+};
+
 onMounted(async () => {});
 
-onBeforeUnmount(() => {});
+onBeforeUnmount(() => {
+	stopRealtime();
+});
 </script>
 
 <template>
-	<textarea
-		v-model="aiPrompt"
-		id="promptInput"
-		@keydown="async (event) => await aiKeydown(event)"
-		placeholder="Enter a prompt to generate an image..."
-	></textarea>
-	<div class="submitWrapper">
-		<button class="button primary" @click="async (event) => aiRequest()" :disabled="!aiPrompt">Generate</button>
-		<Transition name="fade">
-			<div class="avatarLoader" v-if="aiIsLoading">
-				<Loader class="spin" />
-			</div>
-		</Transition>
-	</div>
-	<div class="imageContainer" v-if="aiImageResponse.length > 0">
-		<img v-for="image in aiImageResponse" :src="`data:${image.image_mime};base64,${image.image_base64}`" />
-	</div>
+	<v-tabs v-model="aiTab" @update:modelValue="async () => await switchAiTab(aiTab)" class="aiTabs">
+		<v-tab value="image">Image</v-tab>
+		<v-tab value="text">Text</v-tab>
+		<v-tab value="real-time">Real-Time</v-tab>
+		<v-tabs-window v-model="aiTab">
+			<v-tabs-window-item value="image">
+				<div class="real-time-container">
+					<div class="real-time-header">
+						<h1>Real-Time</h1>
+					</div>
+					<div class="real-time-content">
+						<div class="real-time-input">
+							<textarea
+								v-model="aiPrompt"
+								id="promptInput"
+								@keydown="async (event) => await aiKeydown(event)"
+								placeholder="Enter a prompt to generate an image..."
+							></textarea>
+							<div class="submitWrapper">
+								<button
+									class="button primary"
+									@click="async (event) => aiRequest()"
+									:disabled="!aiPrompt"
+								>
+									Generate
+								</button>
+								<Transition name="fade">
+									<div class="avatarLoader" v-if="aiIsLoading">
+										<Loader class="spin" />
+									</div>
+								</Transition>
+							</div>
+							<div class="imageContainer" v-if="aiImageResponse.length > 0">
+								<img
+									v-for="image in aiImageResponse"
+									:src="`data:${image.image_mime};base64,${image.image_base64}`"
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</v-tabs-window-item>
+			<v-tabs-window-item value="text">
+				<textarea
+					v-model="aiPrompt"
+					id="promptInput"
+					@keydown="async (event) => await aiKeydown(event)"
+					placeholder="Enter a prompt to generate text..."
+				></textarea>
+				<div class="submitWrapper">
+					<button class="button primary" @click="async (event) => aiRequest()" :disabled="!aiPrompt">
+						Generate
+					</button>
+					<Transition name="fade">
+						<div class="avatarLoader" v-if="aiIsLoading">
+							<Loader class="spin" />
+						</div>
+					</Transition>
+				</div>
+			</v-tabs-window-item>
+			<v-tabs-window-item value="real-time">
+				<div class="real-time-container">
+					<div class="real-time-header">
+						<h1>Real-Time</h1>
+					</div>
+					<div class="real-time-content">
+						<video ref="realtimeVideo" class="realtimePreview" autoplay muted playsinline></video>
+						<canvas ref="realtimeCanvas" class="realtimeCanvas"></canvas>
+						<div class="submitWrapper">
+							<button
+								class="button primary"
+								type="button"
+								@click="startRealtime"
+								:disabled="realtimeRunning || realtimeStarting"
+							>
+								Start
+							</button>
+							<button class="button" type="button" @click="stopRealtime" :disabled="!realtimeRunning">
+								Stop
+							</button>
+						</div>
+						<p v-if="realtimeError" class="realtimeError">{{ realtimeError }}</p>
+						<div class="realtimeEvaluation">
+							<p><strong>Scene</strong> {{ realtimeScene }}</p>
+							<p><strong>People</strong> {{ realtimePeople }}</p>
+							<p><strong>Emotion</strong> {{ realtimeEmotion }}</p>
+							<p><strong>Heard</strong> {{ realtimeHeard }}</p>
+							<p><strong>Transcript</strong> {{ realtimeTranscript }}</p>
+							<p><strong>Reply</strong> {{ realtimeReply }}</p>
+						</div>
+					</div>
+				</div>
+			</v-tabs-window-item>
+		</v-tabs-window>
+	</v-tabs>
 </template>
+
+<style scoped>
+.realtimePreview {
+	width: 100%;
+	max-width: 640px;
+	background: #111;
+}
+.realtimeCanvas {
+	display: none;
+}
+.realtimeError {
+	color: #b00020;
+}
+.realtimeEvaluation p {
+	margin: 0.25rem 0;
+}
+</style>
