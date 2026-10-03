@@ -23,86 +23,86 @@ const verifyMessages = ref([]);
 
 // // declare functions
 const loginRequest = async (event) => {
-    event.preventDefault();
-    // const buttonElement = event?.currentTarget as HTMLElement;
-    // await appStore.buttonFeedback(buttonElement, true, false, false);
-    // const visitorData = await getData();
-    // console.log("visitorData", visitorData);
+	event.preventDefault();
+	// const buttonElement = event?.currentTarget as HTMLElement;
+	// await appStore.buttonFeedback(buttonElement, true, false, false);
+	// const visitorData = await getData();
+	// console.log("visitorData", visitorData);
 
-    const loginRequest = await API.login(email.value, password.value);
-    if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
-        console.log("login response", JSON.parse(JSON.stringify(loginRequest)));
-    }
-    if (loginRequest.success === true) {
-        // await appStore.buttonFeedback(buttonElement, false, true, false);
+	const loginRequest = await API.login(email.value, password.value);
+	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+		console.log("login response", JSON.parse(JSON.stringify(loginRequest)));
+	}
+	if (loginRequest.success === true) {
+		// await appStore.buttonFeedback(buttonElement, false, true, false);
 
-        loginMessages.value = [];
-        verify.value = true;
-        auth_code.value = "";
-        if (loginRequest.auth_code) {
-            auth_code.value = loginRequest.auth_code as string;
-        }
-        await nextTick();
-        appStore.focusField("#verifyInput");
-        await appStore.delay(3000);
-        // await appStore.buttonFeedback(buttonElement, false, false, false);
-    } else {
-        // await appStore.buttonFeedback(buttonElement, false, false, true);
-        if (loginRequest.message && Array.isArray(loginRequest.message)) {
-            loginMessages.value = loginRequest.message as string[];
-        }
-        await nextTick();
-        appStore.focusField("#emailInput");
-    }
+		loginMessages.value = [];
+		verify.value = true;
+		auth_code.value = "";
+		if (loginRequest.auth_code) {
+			auth_code.value = loginRequest.auth_code as string;
+		}
+		await nextTick();
+		appStore.focusField("#verifyInput");
+		await appStore.delay(3000);
+		// await appStore.buttonFeedback(buttonElement, false, false, false);
+	} else {
+		// await appStore.buttonFeedback(buttonElement, false, false, true);
+		if (loginRequest.message && Array.isArray(loginRequest.message)) {
+			loginMessages.value = loginRequest.message as string[];
+		}
+		await nextTick();
+		appStore.focusField("#emailInput");
+	}
 };
 
 const verifyRequest = async (event) => {
-    event.preventDefault();
-    // let visitorData = null;
-    // try {
-    // 	visitorData = await getData();
-    // 	console.log("visitorData", JSON.parse(JSON.stringify(visitorData)));
-    // } catch (error: any) {
-    // 	console.log("error", error.message);
-    // }
-    const userAgent: string | string[] = navigator.userAgent;
-    const IP: string | null = await API.getIP();
-    const geoLocation: types.KeyValue | null = await API.getGeoLocation(IP as string);
-    // const buttonElement = event?.currentTarget as HTMLElement;
-    // await appStore.buttonFeedback(buttonElement, true, false, false);
-    const verifyRequest = (await API.verify(
-        email.value,
-        auth_code.value,
-        userAgent as string | null,
-        IP as string | null,
-        geoLocation?.latitude as number | null,
-        geoLocation?.longitude as number | null,
-    )) as types.KeyValue;
-    if (verifyRequest.authenticated === true) {
-        // await appStore.buttonFeedback(buttonElement, false, false, false);
-        auth_code.value = "";
-        email.value = "";
-        await router.replace({ path: "/" });
-    } else {
-        // await appStore.buttonFeedback(buttonElement, false, false, true);
-        if (verifyRequest.message && Array.isArray(verifyRequest.message)) {
-            verifyMessages.value = verifyRequest.message as string[];
-        }
-        await nextTick();
-        appStore.focusField("#verifyInput");
-    }
+	event.preventDefault();
+	// let visitorData = null;
+	// try {
+	// 	visitorData = await getData();
+	// 	console.log("visitorData", JSON.parse(JSON.stringify(visitorData)));
+	// } catch (error: any) {
+	// 	console.log("error", error.message);
+	// }
+	const userAgent: string | string[] = navigator.userAgent;
+	const IP: string | null = await API.getIP();
+	const geoLocation: types.KeyValue | null = await API.getGeoLocation(IP as string);
+	// const buttonElement = event?.currentTarget as HTMLElement;
+	// await appStore.buttonFeedback(buttonElement, true, false, false);
+	const verifyRequest = (await API.verify(
+		email.value,
+		auth_code.value,
+		userAgent as string | null,
+		IP as string | null,
+		geoLocation?.latitude as number | null,
+		geoLocation?.longitude as number | null,
+	)) as types.KeyValue;
+	if (verifyRequest.authenticated === true) {
+		// await appStore.buttonFeedback(buttonElement, false, false, false);
+		auth_code.value = "";
+		email.value = "";
+		await router.replace({ path: "/" });
+	} else {
+		// await appStore.buttonFeedback(buttonElement, false, false, true);
+		if (verifyRequest.message && Array.isArray(verifyRequest.message)) {
+			verifyMessages.value = verifyRequest.message as string[];
+		}
+		await nextTick();
+		appStore.focusField("#verifyInput");
+	}
 };
 const loginSubmit = async (event) => {
-    event.preventDefault();
-    let type = "login";
-    if (auth_code.value.length > 0) {
-        type = "verify";
-    }
-    if (type === "login") {
-        await loginRequest(event);
-    } else if (type === "verify") {
-        await verifyRequest(event);
-    }
+	event.preventDefault();
+	let type = "login";
+	if (auth_code.value.length > 0) {
+		type = "verify";
+	}
+	if (type === "login") {
+		await loginRequest(event);
+	} else if (type === "verify") {
+		await verifyRequest(event);
+	}
 };
 
 onMounted(async () => {});
@@ -254,8 +254,6 @@ onMounted(async () => {});
 							</div>
 						</Transition>
 					</v-form>
-
-					<p class="dialogueProgress"><v-progress-circular indeterminate></v-progress-circular></p>
 				</div>
 			</div>
 		</Transition>
