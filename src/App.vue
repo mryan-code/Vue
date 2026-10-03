@@ -13,6 +13,7 @@ import Lucide from "@/components/Lucide.vue";
 import { LayoutGrid, Moon, Sun, ChevronDown, LogOut, LogIn } from "@lucide/vue";
 import WSSDialogue from "@/components/WSSDialogue.vue";
 import MainMenu from "@/components/MainMenu.vue";
+import LoginDialogue from "@/components/LoginDialogue.vue";
 
 import { useVisitorData } from "@fingerprint/vue";
 
@@ -290,7 +291,8 @@ onUnmounted(async () => {
 							</v-expansion-panel>
 						</v-expansion-panels>
 						<router-view />
-						<!-- <WSSDialogue v-if="appStore.authenticated == true" /> -->
+						<WSSDialogue v-if="appStore.authenticated == true" />
+						<LoginDialogue v-if="appStore.loginDialogue == true" />
 					</div>
 				</Transition>
 			</div>
