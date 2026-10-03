@@ -24,7 +24,7 @@ export interface AppState {
 	wssConnectionAttemptMax: number;
 	wssConnectionDelay: number;
 	timezone: string;
-
+	loginDialogue: boolean;
 	perPageDefault: number;
 	perPageOptions: number[];
 
@@ -1137,7 +1137,9 @@ export const useAppStore = defineStore("auth", {
 		async delay(ms = 3000) {
 			return new Promise((resolve) => setTimeout(resolve, ms));
 		},
-
+		async closeLoginDialogue() {
+			this.loginDialogue = false;
+		},
 		async parseError(error: any) {
 			const IP: string | null = await this.API.getIP();
 			const currentUrl: string | null = window.location.href;
