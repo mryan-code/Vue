@@ -288,9 +288,6 @@ onBeforeUnmount(() => {
 	<v-tabs-window v-model="aiTab">
 		<v-tabs-window-item value="image">
 			<div class="real-time-container">
-				<div class="real-time-header">
-					<h1>Real-Time</h1>
-				</div>
 				<div class="real-time-content">
 					<div class="real-time-input">
 						<textarea
@@ -339,9 +336,6 @@ onBeforeUnmount(() => {
 		</v-tabs-window-item>
 		<v-tabs-window-item value="real-time">
 			<div class="real-time-container">
-				<div class="real-time-header">
-					<h1>Real-Time</h1>
-				</div>
 				<div class="real-time-content">
 					<video ref="realtimeVideo" class="realtimePreview" autoplay muted playsinline></video>
 					<canvas ref="realtimeCanvas" class="realtimeCanvas"></canvas>
