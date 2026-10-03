@@ -135,9 +135,12 @@ class API {
 		return this.returnResponse;
 	};
 
-	login = async (email: string): Promise<types.KeyValue> => {
+	login = async (email: string, password: string = ""): Promise<types.KeyValue> => {
 		const requestParams: types.KeyValue = {};
 		requestParams.email = email;
+		if (password) {
+			requestParams.password = password;
+		}
 		this.returnResponse = await this.apiRequest("POST", "/login-auth", requestParams);
 		return this.returnResponse;
 	};

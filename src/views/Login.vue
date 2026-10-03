@@ -23,6 +23,7 @@ const appStore = useAppStore();
 // // declare variables
 const email = ref("");
 const auth_code = ref("");
+const password = ref("");
 const loginMessages = ref<string[]>([]);
 const verify = ref(false);
 const verifyMessages = ref<string[]>([]);
@@ -35,7 +36,10 @@ const loginRequest = async (event: Event) => {
 	const visitorData = await getData();
 	console.log("visitorData", visitorData);
 
-	const loginRequest = await API.login(email.value);
+	const loginRequest = await API.login(email.value, password.value);
+	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
+		console.log("login response", JSON.parse(JSON.stringify(loginRequest)));
+	}
 	if (loginRequest.success === true) {
 		// await appStore.buttonFeedback(buttonElement, false, true, false);
 
@@ -160,6 +164,27 @@ onMounted(async () => {
 			</v-card-text>
 
 			<v-form id="loginForm">
+				<Transition name="fade">
+					<div class="inputWrapper">
+						<input
+							class="input"
+							id="passwordInput"
+							:data-field="`password`"
+							v-model="password"
+							type="password"
+							required
+							autocomplete="off"
+							autocorrect="off"
+							autocapitalize="off"
+							spellcheck="false"
+							:error="loginMessages.length > 0"
+							:error-messages="loginMessages"
+							:readonly="verify"
+							ref="passwordRef"
+							variant="plain"
+						/>
+					</div>
+				</Transition>
 				<Transition name="fade">
 					<div class="inputWrapper">
 						<input
