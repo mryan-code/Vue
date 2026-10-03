@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+// lang="ts" so Vite parses the type assertions in this file instead of treating them as JavaScript.
 // // imports
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import APIClass from "@/classes/API";
