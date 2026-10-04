@@ -270,9 +270,9 @@ export const useAppStore = defineStore("auth", {
 								if (this.settings && this.settings.setup_complete == 0) {
 									this.setupDialogue = true;
 								}
-								if (this.wssReadyState == 0 && this.settings.user_id) {
-									await this.openWSS(this.settings.user_id as number);
-								}
+								// if (this.wssReadyState == 0 && this.settings.user_id) {
+								// 	await this.openWSS(this.settings.user_id as number);
+								// }
 							}
 						}
 					}
