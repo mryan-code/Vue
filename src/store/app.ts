@@ -1013,6 +1013,8 @@ export const useAppStore = defineStore("auth", {
 						await this.closeWSS();
 					}
 
+					console.log("openWSS user_id", JSON.parse(JSON.stringify(this.globalVars)));
+
 					let wssURL = "";
 					wssURL += this.globalVars.WSS_PROTOCOL;
 					wssURL += "://" + this.globalVars.WSS_HOST;
