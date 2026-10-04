@@ -99,8 +99,8 @@ const readUserJwt = (): string => {
 };
 
 const realtimeSocketUrl = (): string => {
-	const vars = appStore.globalVars;
-	return `${vars.WSS_PROTOCOL}://${vars.WSS_HOST}:${vars.WSS_PORT}/realtime`;
+	// Build-time env, not globalVars: the realtime socket must not depend on the start-app response.
+	return `${process.env.VUE_APP_ENV_LLM_WSS_URL}/realtime`;
 };
 
 const sendRealtimePacket = (kind: number, payload: Uint8Array) => {
