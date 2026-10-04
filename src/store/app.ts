@@ -8,12 +8,6 @@ import { RouteRecordRaw, useRoute, useRouter } from "vue-router";
 import { markRaw, watch, nextTick, ref } from "vue";
 import API from "@/classes/API";
 
-// Bug fix: dotenv is a Node-only module and is not a frontend dependency, so the Vite/Rolldown production build failed resolving it.
-// Vite already loads .env in vite.config.mts and replaces process.env.VUE_APP_* at build time, so a runtime dotenv.config() call is not needed in the browser.
-// Deprecated:
-// import dotenv from "dotenv";
-// dotenv.config();
-
 const controller = new AbortController();
 
 export interface AppState {
