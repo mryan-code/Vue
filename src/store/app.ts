@@ -353,7 +353,7 @@ export const useAppStore = defineStore("auth", {
 		},
 		async testLogin() {
 			await this.API.testAuth().then(async (testAuthRes: any) => {
-				if (this.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || this.globalVars.DEBUG_USER == "mryan") {
+				if (this.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || this.globalVars.DEBUG_USER == "foobar") {
 					console.log("testLogin - testAuthRes: ", JSON.parse(JSON.stringify(testAuthRes)));
 				}
 				if (testAuthRes.success) {
