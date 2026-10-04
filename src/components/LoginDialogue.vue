@@ -50,8 +50,6 @@ const loginRequest = async (event) => {
 		if (loginRequest.message && Array.isArray(loginRequest.message)) {
 			loginMessages.value = loginRequest.message as string[];
 		}
-		await nextTick();
-		appStore.focusField("#passwordInput");
 	}
 };
 
