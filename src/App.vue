@@ -136,7 +136,7 @@ onUnmounted(async () => {
 
 <template>
 	{{ console.log(JSON.stringify(router.currentRoute.value.meta.slug)) }}
-	<div :id="router.currentRoute.value.meta.slug" class="webApp" :data-theme="appStore.theme">
+	<div :id="router.currentRoute.value.meta?.slug" class="webApp" :data-theme="appStore.theme">
 		<div id="header">
 			<Transition name="fade">
 				<div class="headerContent">
