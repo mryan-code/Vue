@@ -7,6 +7,9 @@ import moment, { Moment } from "moment-timezone";
 import { RouteRecordRaw, useRoute, useRouter } from "vue-router";
 import { markRaw, watch, nextTick, ref } from "vue";
 import API from "@/classes/API";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const controller = new AbortController();
 
@@ -14,7 +17,10 @@ export interface AppState {
 	settings: types.KeyValue;
 	globalVars: any;
 	authenticated: boolean;
-	wss: WebSocket;
+	wss: {
+		main: WebSocket;
+		llm: WebSocket;
+	};
 	wssReadyState: number;
 	wssDialogue: boolean;
 	wssDialogueMessage: string;
@@ -94,7 +100,10 @@ export const useAppStore = defineStore("auth", {
 		globalVars: {},
 		startVars: null,
 		authenticated: false,
-		wss: {} as WebSocket,
+		wss: {
+			main: null as WebSocket | null,
+			llm: null as WebSocket | null,
+		},
 		wssReadyState: 0,
 		wssDialogue: true,
 		wssDialogueMessage: "Connecting to WSS...",
@@ -271,7 +280,19 @@ export const useAppStore = defineStore("auth", {
 									this.setupDialogue = true;
 								}
 								if (this.wssReadyState == 0 && this.settings.user_id) {
-									await this.openWSS(this.settings.user_id as number);
+									const wssRes = await this.openWSS(
+										process.env.VUE_APP_ENV_WSS_URL as string,
+										this.settings.user_id as number,
+										"main",
+									);
+									const llmWssRes = await this.openWSS(
+										process.env.VUE_APP_ENV_LLM_WSS_URL as string,
+										this.settings.user_id as number,
+										"llm",
+									);
+									if (wssRes.success && llmWssRes.success) {
+										this.wssReadyState = 1;
+									}
 								}
 							}
 						}
@@ -1006,17 +1027,16 @@ export const useAppStore = defineStore("auth", {
 			this.headerMenuType = "";
 		},
 
-		async openWSS(user_id: number) {
+		async openWSS(url: string, user_id: number, type: string = "main") {
+			let success = false;
 			try {
 				if (this.authenticated) {
-					if (this.wssReadyState === 1 && this.wss) {
-						await this.closeWSS();
+					if (this.wssReadyState === 1 && this.wss[type] !== null) {
+						await this.closeWSS(type);
 					}
 
 					let wssURL = "";
-					wssURL += this.globalVars.WSS_PROTOCOL;
-					wssURL += "://" + this.globalVars.WSS_HOST;
-					wssURL += ":" + this.globalVars.WSS_PORT;
+					wssURL += url;
 					wssURL += "?user_id=" + user_id.toString();
 					wssURL += "&user_timezone=" + this.timezone;
 					if (localStorage.getItem(this.loginTokenKey)) {
@@ -1025,18 +1045,19 @@ export const useAppStore = defineStore("auth", {
 						if (validation.isJSON(localStorageToken.value)) {
 							localStorageToken.value = JSON.parse(localStorageToken.value);
 							if (localStorageToken.value.login_token) {
-								wssURL += "&loginToken=" + localStorageToken.value.login_token;
+								wssURL += "&login_token=" + localStorageToken.value.login_token;
 							}
 						}
 					}
 					if (this.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || this.globalVars.DEBUG_USER == "foobar") {
 						console.error("openWSS wssURL: ", wssURL);
+						success = false;
 					}
 
 					const wss = new WebSocket(wssURL);
-					this.wss = wss;
+					this.wss[type] = wss;
 					wss.onopen = async (event: Event) => {
-						if (this.wss !== wss) {
+						if (this.wss[type] !== null && this.wss[type] !== wss) {
 							return;
 						}
 						if (event.type == "open" && wss.readyState === WebSocket.OPEN) {
@@ -1050,10 +1071,11 @@ export const useAppStore = defineStore("auth", {
 							this.wssReadyState = 1;
 							this.wssDialogue = false;
 							this.wssConnectionAttempt = 0;
+							success = true;
 						}
 					};
 					wss.onmessage = async (event) => {
-						if (this.wss !== wss) {
+						if (this.wss[type] !== null && this.wss[type] !== wss) {
 							return;
 						}
 						let wssMessage: any = false;
@@ -1083,7 +1105,7 @@ export const useAppStore = defineStore("auth", {
 									if (this.globalVars.GLOBAL_DEBUG_LEVEL == "info") {
 										console.log("wssMessage status: ", JSON.parse(JSON.stringify(wssMessage)));
 									}
-									await this.closeWSS();
+									await this.closeWSS(type);
 									break;
 								default:
 									this.wssMessage = wssMessage;
@@ -1099,7 +1121,7 @@ export const useAppStore = defineStore("auth", {
 						) {
 							console.error("wss.onerror error: ", event);
 						}
-						if (this.wss !== wss) {
+						if (this.wss[type] !== null && this.wss[type] !== wss) {
 							return;
 						}
 						this.wssError = (event as ErrorEvent).message as string;
@@ -1107,7 +1129,7 @@ export const useAppStore = defineStore("auth", {
 						this.wssDialogue = true;
 					};
 					wss.onclose = async (event: CloseEvent) => {
-						if (this.wss !== wss) {
+						if (this.wss[type] !== null && this.wss[type] !== wss) {
 							return;
 						}
 						this.wssReadyState = 0;
@@ -1125,13 +1147,15 @@ export const useAppStore = defineStore("auth", {
 				}
 				await this.logError(error);
 			}
+			return success;
 		},
 		async closeWSSDialogue() {
 			this.wssDialogue = false;
 		},
-		async closeWSS() {
-			if (this.authenticated && this.wss) {
-				this.wss.close();
+		async closeWSS(type: string = "main") {
+			if (this.authenticated && this.wss[type] !== null) {
+				this.wss[type].close();
+				this.wss[type] = null;
 			}
 		},
 		async delay(ms = 3000) {
