@@ -947,8 +947,8 @@ onMounted(async () => {
 					</div>
 					<div class="slideText" style="color: rgb(255, 255, 255)">
 						<span class="section">
-							<ul class="skillList">
-								<li>
+							<div class="skillList">
+								<div class="skillItem">
 									<span class="skillTitle heading">TypeScript/JavaScript</span>
 									<span class="skillDesc"
 										>I am extremely comfortable using JavaScript, I've been using it for over twelve
@@ -964,8 +964,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">PHP</span>
 									<span class="skillDesc"
 										>I got my first taste of PHP in school, I fell in love immediately. I love the
@@ -981,8 +981,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">MySQL</span>
 									<span class="skillDesc"
 										>I am skilled in database design, querying, and optimization for performance and
@@ -997,8 +997,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">HTML/CSS</span>
 									<span class="skillDesc"
 										>Everyone says HTML is basic, while that’s true, it can be much more complex.
@@ -1013,8 +1013,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">Bash</span>
 									<span class="skillDesc"
 										>I am very comfortable working with a command line, I even wrote a JavaScript
@@ -1030,8 +1030,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">jQuery</span>
 									<span class="skillDesc"
 										>I have lots of experience using it for DOM manipulation, event handling, and
@@ -1046,8 +1046,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">SCSS</span>
 									<span class="skillDesc"
 										>Is a CSS preprocessor. It enables a developer to use programming logic in CSS.
@@ -1061,8 +1061,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">VueJS</span>
 									<span class="skillDesc"
 										>I'm pretty familiar with it, it's new to me but I picked it up fast. This site
@@ -1076,8 +1076,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">NodeJS</span>
 									<span class="skillDesc"
 										>I personally prefer NPM to Yarn, though the two seem similar. I even published
@@ -1092,8 +1092,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">SEO</span>
 									<span class="skillDesc"
 										>I took a course on Search Engine Optimization in school, and I have been using
@@ -1107,8 +1107,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">GIT</span>
 									<span class="skillDesc"
 										>I am very familiar with GIT. I run a personal development server that utilizes
@@ -1122,8 +1122,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">SVN</span>
 									<span class="skillDesc"
 										>While it’s not as popular as it once was, SVN is still widely used. I used it
@@ -1136,8 +1136,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">REGEX</span>
 									<span class="skillDesc"
 										>At first I was overwhelmed by the complexity of regex, but I am now very
@@ -1150,8 +1150,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">Wordpress</span>
 									<span class="skillDesc"
 										>When I mention I develop using it, people assume the basic blogging platform.
@@ -1166,8 +1166,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<!-- <li>
+								</div>
+								<!-- <div class="skillItem">
 									<span class="skillTitle heading">Joomla</span>
 									<span class="skillDesc"></span>
 									<span class="skillRankWrapper">
@@ -1177,8 +1177,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">Push Messaging (Notifications)</span>
 									<span class="skillDesc"></span>
 									<span class="skillRankWrapper">
@@ -1188,8 +1188,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li>
-								<li>
+								</div>
+								<div class="skillItem">
 									<span class="skillTitle heading">Websockets</span>
 									<span class="skillDesc"></span>
 									<span class="skillRankWrapper">
@@ -1199,8 +1199,8 @@ onMounted(async () => {
 											<span class="rankBG"></span>
 										</span>
 									</span>
-								</li> -->
-							</ul>
+								</div> -->
+							</div>
 						</span>
 					</div>
 				</div>
