@@ -22,22 +22,18 @@ const verify = ref(false);
 const verifyMessages = ref([]);
 
 // // declare functions
-
+const loginSubmit = async (event) => {
+	event.preventDefault();
+	await loginRequest(event);
+};
 const loginRequest = async (event) => {
 	event.preventDefault();
-	// let visitorData = null;
-	// try {
-	// 	visitorData = await getData();
-	// 	console.log("visitorData", JSON.parse(JSON.stringify(visitorData)));
-	// } catch (error: any) {
-	// 	console.log("error", error.message);
-	// }
 	const userAgent: string | string[] = navigator.userAgent;
 	const IP: string | null = await API.getIP();
 	const geoLocation: types.KeyValue | null = await API.getGeoLocation(IP as string);
 	// const buttonElement = event?.currentTarget as HTMLElement;
 	// await appStore.buttonFeedback(buttonElement, true, false, false);
-	const verifyRequest = (await API.verify(
+	const loginRequest = (await API.login(
 		email.value,
 		password.value,
 		userAgent as string | null,
@@ -45,30 +41,17 @@ const loginRequest = async (event) => {
 		geoLocation?.latitude as number | null,
 		geoLocation?.longitude as number | null,
 	)) as types.KeyValue;
-	if (verifyRequest.authenticated === true) {
+	if (loginRequest.authenticated === true) {
 		// await appStore.buttonFeedback(buttonElement, false, false, false);
-		auth_code.value = "";
-		email.value = "";
-		await router.replace({ path: "/" });
+		//close login dialogue
+		appStore.closeLoginDialogue();
 	} else {
 		// await appStore.buttonFeedback(buttonElement, false, false, true);
-		if (verifyRequest.message && Array.isArray(verifyRequest.message)) {
-			verifyMessages.value = verifyRequest.message as string[];
+		if (loginRequest.message && Array.isArray(loginRequest.message)) {
+			loginMessages.value = loginRequest.message as string[];
 		}
 		await nextTick();
-		appStore.focusField("#verifyInput");
-	}
-};
-const loginSubmit = async (event) => {
-	event.preventDefault();
-	let type = "login";
-	if (auth_code.value.length > 0) {
-		type = "verify";
-	}
-	if (type === "login") {
-		await loginRequest(event);
-	} else if (type === "verify") {
-		await verifyRequest(event);
+		appStore.focusField("#passwordInput");
 	}
 };
 
