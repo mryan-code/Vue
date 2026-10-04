@@ -530,12 +530,3 @@ onBeforeUnmount(() => {
 		</div>
 	</div>
 </template>
-
-<style scoped>
-#header {
-	display: none !important;
-}
-.skillList {
-	margin-left: 0px;
-}
-</style>

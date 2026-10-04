@@ -480,7 +480,6 @@ onMounted(async () => {
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									xmlns:xlink="http://www.w3.org/1999/xlink"
-									height="auto"
 									stroke-miterlimit="10"
 									style="
 										fill-rule: nonzero;
@@ -1224,7 +1223,6 @@ onMounted(async () => {
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									xmlns:xlink="http://www.w3.org/1999/xlink"
-									height="auto"
 									stroke-miterlimit="10"
 									style="
 										fill-rule: nonzero;
@@ -6191,7 +6189,6 @@ onMounted(async () => {
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									xmlns:xlink="http://www.w3.org/1999/xlink"
-									height="auto"
 									stroke-miterlimit="10"
 									style="
 										fill-rule: nonzero;
@@ -6556,7 +6553,6 @@ onMounted(async () => {
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									xmlns:xlink="http://www.w3.org/1999/xlink"
-									height="auto"
 									stroke-miterlimit="10"
 									style="
 										fill-rule: nonzero;
