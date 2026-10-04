@@ -7,7 +7,7 @@
 			"auth_required": 3,
 			"icon": null,
 			"auth_level": 3,
-			"slug": "",
+			"slug": "home",
 			"location": 1
 		},
 		"component": "../views/Home.vue",
