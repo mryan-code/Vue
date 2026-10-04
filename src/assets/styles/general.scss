@@ -101,12 +101,7 @@ body,
 	transition: all var(--duration) var(--function);
 	background-color: transparent;
 	// Soft fade so page content does not show through the logo and controls while scrolling.
-	background-image: linear-gradient(
-		to bottom,
-		var(--body-bg) 0%,
-		var(--body-bg) 88%,
-		transparent 100%
-	);
+	background-image: linear-gradient(to bottom, var(--body-bg) 0%, var(--body-bg) 88%, transparent 100%);
 	color: var(--headline);
 	padding: 16px 22px;
 	box-sizing: border-box;
@@ -519,10 +514,10 @@ body,
 							filter: none;
 							stroke: var(--headline);
 							text-shadow: none;
-						circle,
-						rect,
-						path {
-							stroke: var(--headline);
+							circle,
+							rect,
+							path {
+								stroke: var(--headline);
 
 								filter: none;
 								text-shadow: none;
@@ -880,6 +875,9 @@ body,
 #header .headerPagePillLabel {
 	color: var(--headline);
 	-webkit-text-stroke: 0;
+}
+#visual-resume #header {
+	display: none !important;
 }
 
 #sideBar {
