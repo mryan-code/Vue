@@ -320,12 +320,16 @@ const faqs: LandingFaq[] = [
 		-->
 		<div class="landingGround" aria-hidden="true">
 			<div class="landingGroundWash" :style="{ transform: `translate3d(0, ${skyShift * 0.12}px, 0)` }"></div>
-			<img
-				class="landingLayer landingSkyBg"
-				src="/landing/sky-bg.webp"
-				alt=""
-				:style="{ transform: `translate3d(0, ${skyShift * 0.18}px, 0)` }"
-			/>
+			<!--
+				Deprecated code: the dune photograph. Cropped to a thin band, it showed as a brown ridge under the stack card.
+				The night sky is the page background now, so that brown is gone.
+				<img
+					class="landingLayer landingSkyBg"
+					src="/landing/sky-bg.webp"
+					alt=""
+					:style="{ transform: `translate3d(0, ${skyShift * 0.18}px, 0)` }"
+				/>
+			-->
 			<span
 				class="landingStar"
 				v-for="(star, index) in groundStars"
@@ -709,19 +713,18 @@ const faqs: LandingFaq[] = [
 	will-change: transform;
 }
 
-.landingSkyBg {
-	z-index: 1;
-	top: 0;
-	height: auto;
-	// The file is a thin cloud band inside a black frame. This ratio crops that frame off
-	// so the dark under the clouds is the page sky, where the stars are, instead of a black bar.
-	aspect-ratio: 1400 / 150;
-	object-position: center 20%;
-	opacity: 0.88;
-	filter: brightness(0.82) saturate(0.78);
-	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 58%, transparent 100%);
-	mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 58%, transparent 100%);
-}
+// Deprecated code: the brown dune band. The crop put the tan ridges under the stack card.
+// .landingSkyBg {
+// 	z-index: 1;
+// 	top: 0;
+// 	height: auto;
+// 	aspect-ratio: 1400 / 150;
+// 	object-position: center 20%;
+// 	opacity: 0.88;
+// 	filter: brightness(0.82) saturate(0.78);
+// 	-webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 58%, transparent 100%);
+// 	mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 58%, transparent 100%);
+// }
 
 .landingGround .landingStar {
 	z-index: 2;
