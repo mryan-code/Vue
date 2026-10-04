@@ -7,9 +7,12 @@ import moment, { Moment } from "moment-timezone";
 import { RouteRecordRaw, useRoute, useRouter } from "vue-router";
 import { markRaw, watch, nextTick, ref } from "vue";
 import API from "@/classes/API";
-import dotenv from "dotenv";
 
-dotenv.config();
+// Bug fix: dotenv is a Node-only module and is not a frontend dependency, so the Vite/Rolldown production build failed resolving it.
+// Vite already loads .env in vite.config.mts and replaces process.env.VUE_APP_* at build time, so a runtime dotenv.config() call is not needed in the browser.
+// Deprecated:
+// import dotenv from "dotenv";
+// dotenv.config();
 
 const controller = new AbortController();
 
@@ -110,8 +113,9 @@ export const useAppStore = defineStore("auth", {
 		wssError: "",
 		wssMessage: null,
 		wssConnectionAttempt: 0,
-		wssConnectionAttemptMax: parseInt(process.env.ENV_WSS_CONNECTION_ATTEMPT_MAX || "100"),
-		wssConnectionDelay: parseInt(process.env.ENV_WSS_CONNECTION_DELAY || "5000"),
+		// These match the VUE_APP_ keys in .env so Vite's define replacement bakes them in. ENV_* names were never set, so process.env would be undefined in the browser.
+		wssConnectionAttemptMax: parseInt(process.env.VUE_APP_ENV_WSS_CONNECTION_ATTEMPT_MAX || "100"),
+		wssConnectionDelay: parseInt(process.env.VUE_APP_ENV_WSS_CONNECTION_DELAY || "5000"),
 
 		timezone: "",
 
