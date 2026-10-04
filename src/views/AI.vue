@@ -76,9 +76,11 @@ const realtimeCanvas = ref<HTMLCanvasElement | null>(null);
 const realtimeRunning = ref(false);
 const realtimeStarting = ref(false);
 const realtimeError = ref("");
+const realtimeStatus = ref("");
 const realtimeScene = ref("");
 const realtimePeople = ref("");
 const realtimeEmotion = ref("");
+const realtimeText = ref("");
 const realtimeHeard = ref("");
 const realtimeTranscript = ref("");
 const realtimeReply = ref("");
@@ -198,7 +200,13 @@ const startRealtimeAudio = async (stream: MediaStream) => {
 		node.port.onmessage = (event: MessageEvent<ArrayBuffer>) => {
 			sendRealtimePacket(0x02, new Uint8Array(event.data));
 		};
+		// The worklet must be connected (even through a muted gain) or the
+		// browser never pulls it and process() is never called — no audio packets.
+		const mute = audioContext.createGain();
+		mute.gain.value = 0;
 		source.connect(node);
+		node.connect(mute);
+		mute.connect(audioContext.destination);
 	} catch {
 		// Some browsers reject the worklet module. Downsample on this thread instead of failing Start.
 		startScriptProcessor(audioContext, source);
@@ -210,10 +218,16 @@ const handleRealtimeMessage = (event: MessageEvent) => {
 		return;
 	}
 	const message = JSON.parse(event.data);
+	if (message.type === "session_started") {
+		realtimeStatus.value = "Connected — analyzing frames...";
+		realtimeError.value = "";
+		return;
+	}
 	if (message.type === "evaluation") {
 		realtimeScene.value = message.scene || "";
 		realtimePeople.value = message.people || "";
 		realtimeEmotion.value = message.emotion || "";
+		realtimeText.value = message.text || "";
 		realtimeHeard.value = message.heard || "";
 		return;
 	}
@@ -233,6 +247,7 @@ const handleRealtimeMessage = (event: MessageEvent) => {
 	}
 	if (message.type === "error") {
 		realtimeError.value = message.error || "Realtime evaluation failed";
+		realtimeStatus.value = "";
 	}
 };
 
@@ -267,6 +282,7 @@ const stopRealtime = () => {
 		realtimeVideo.value.srcObject = null;
 	}
 	realtimeRunning.value = false;
+	realtimeStatus.value = "";
 };
 
 // Live camera frames and microphone audio are streamed to /realtime.
@@ -428,10 +444,12 @@ onBeforeUnmount(() => {
 						</button>
 					</div>
 					<p v-if="realtimeError" class="realtimeError">{{ realtimeError }}</p>
+					<p v-if="realtimeStatus" class="realtimeStatus">{{ realtimeStatus }}</p>
 					<div class="realtimeEvaluation">
 						<p><strong>Scene</strong> {{ realtimeScene }}</p>
 						<p><strong>People</strong> {{ realtimePeople }}</p>
 						<p><strong>Emotion</strong> {{ realtimeEmotion }}</p>
+						<p><strong>Text</strong> {{ realtimeText }}</p>
 						<p><strong>Heard</strong> {{ realtimeHeard }}</p>
 						<p><strong>Transcript</strong> {{ realtimeTranscript }}</p>
 						<p><strong>Reply</strong> {{ realtimeReply }}</p>
@@ -453,6 +471,9 @@ onBeforeUnmount(() => {
 }
 .realtimeError {
 	color: #b00020;
+}
+.realtimeStatus {
+	color: #4caf50;
 }
 .realtimeEvaluation p {
 	margin: 0.25rem 0;
