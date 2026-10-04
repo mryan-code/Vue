@@ -9,17 +9,13 @@ import * as types from "@/types";
 import { Mail, KeySquare, Check, X, Loader } from "@lucide/vue";
 
 // // composables and classes
-const router = useRouter();
 const API = new APIClass();
 const appStore = useAppStore();
 
 // // declare variables
 const email = ref("");
-const auth_code = ref("");
 const password = ref("");
 const loginMessages = ref([]);
-const verify = ref(false);
-const verifyMessages = ref([]);
 
 // // declare functions
 const loginSubmit = async (event) => {
@@ -75,7 +71,7 @@ onMounted(async () => {});
 					<h3 class="dialogueTitle">{{ appStore.loginDialogueMessage }}</h3>
 					<p v-if="appStore.loginDialogueError != ''">{{ appStore.loginDialogueError }}</p>
 
-					<v-card-text v-if="loginMessages.length > 0 || verifyMessages.length > 0">
+					<v-card-text v-if="loginMessages.length > 0">
 						<div v-if="loginMessages.length > 0">
 							<p>Login Messages:</p>
 							<ul>
@@ -97,7 +93,6 @@ onMounted(async () => {});
 									@keyup.enter="async (event: Event) => await loginSubmit(event)"
 									:error="loginMessages.length > 0"
 									:error-messages="loginMessages"
-									:readonly="verify"
 									ref="emailRef"
 									variant="plain"
 								/>
@@ -119,7 +114,6 @@ onMounted(async () => {});
 									spellcheck="false"
 									:error="loginMessages.length > 0"
 									:error-messages="loginMessages"
-									:readonly="verify"
 									ref="passwordRef"
 									variant="plain"
 								/>
@@ -132,7 +126,7 @@ onMounted(async () => {});
 									class="button primary"
 									id="loginButton"
 									@click="async (event: Event) => await loginRequest(event as Event)"
-									:disabled="email.length === 0 || verify"
+									:disabled="email.length === 0 || password.length === 0"
 								>
 									<span class="buttonInitial">
 										<span class="buttonIcon">
