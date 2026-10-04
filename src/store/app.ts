@@ -1028,6 +1028,10 @@ export const useAppStore = defineStore("auth", {
 		async openWSS(url: string, user_id: number, type: string = "main") {
 			let success = false;
 			try {
+				// A retry can fire after the session was cleared; fail fast instead of throwing on user_id.toString().
+				if (!url || !user_id) {
+					return false;
+				}
 				if (this.authenticated) {
 					if (this.wssReadyState === 1 && this.wss[type] !== null) {
 						await this.closeWSS(type);
