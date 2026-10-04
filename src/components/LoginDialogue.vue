@@ -22,41 +22,8 @@ const verify = ref(false);
 const verifyMessages = ref([]);
 
 // // declare functions
+
 const loginRequest = async (event) => {
-	event.preventDefault();
-	// const buttonElement = event?.currentTarget as HTMLElement;
-	// await appStore.buttonFeedback(buttonElement, true, false, false);
-	// const visitorData = await getData();
-	// console.log("visitorData", visitorData);
-
-	const loginRequest = await API.login(email.value, password.value);
-	if (appStore.globalVars.GLOBAL_DEBUG_LEVEL == "debug" || appStore.globalVars.DEBUG_USER == "mryan") {
-		console.log("login response", JSON.parse(JSON.stringify(loginRequest)));
-	}
-	if (loginRequest.success === true) {
-		// await appStore.buttonFeedback(buttonElement, false, true, false);
-
-		loginMessages.value = [];
-		verify.value = true;
-		auth_code.value = "";
-		if (loginRequest.auth_code) {
-			auth_code.value = loginRequest.auth_code as string;
-		}
-		await nextTick();
-		appStore.focusField("#verifyInput");
-		await appStore.delay(3000);
-		// await appStore.buttonFeedback(buttonElement, false, false, false);
-	} else {
-		// await appStore.buttonFeedback(buttonElement, false, false, true);
-		if (loginRequest.message && Array.isArray(loginRequest.message)) {
-			loginMessages.value = loginRequest.message as string[];
-		}
-		await nextTick();
-		appStore.focusField("#emailInput");
-	}
-};
-
-const verifyRequest = async (event) => {
 	event.preventDefault();
 	// let visitorData = null;
 	// try {
@@ -72,7 +39,7 @@ const verifyRequest = async (event) => {
 	// await appStore.buttonFeedback(buttonElement, true, false, false);
 	const verifyRequest = (await API.verify(
 		email.value,
-		auth_code.value,
+		password.value,
 		userAgent as string | null,
 		IP as string | null,
 		geoLocation?.latitude as number | null,
@@ -134,15 +101,28 @@ onMounted(async () => {});
 								<li v-for="message in loginMessages" :key="message">{{ message }}</li>
 							</ul>
 						</div>
-						<div v-if="verifyMessages.length > 0">
-							<p>Verify Messages:</p>
-							<ul>
-								<li v-for="message in verifyMessages" :key="message">{{ message }}</li>
-							</ul>
-						</div>
 					</v-card-text>
 
 					<v-form id="loginForm">
+						<Transition name="fade">
+							<div class="inputWrapper">
+								<input
+									class="input"
+									id="emailInput"
+									:data-field="`email`"
+									v-model="email"
+									type="email"
+									required
+									@keyup.enter="async (event: Event) => await loginSubmit(event)"
+									:error="loginMessages.length > 0"
+									:error-messages="loginMessages"
+									:readonly="verify"
+									ref="emailRef"
+									variant="plain"
+								/>
+							</div>
+						</Transition>
+
 						<Transition name="fade">
 							<div class="inputWrapper">
 								<input
@@ -164,22 +144,9 @@ onMounted(async () => {});
 								/>
 							</div>
 						</Transition>
+
 						<Transition name="fade">
 							<div class="inputWrapper">
-								<input
-									class="input"
-									id="emailInput"
-									:data-field="`email`"
-									v-model="email"
-									type="email"
-									required
-									@keyup.enter="async (event: Event) => await loginSubmit(event)"
-									:error="loginMessages.length > 0"
-									:error-messages="loginMessages"
-									:readonly="verify"
-									ref="emailRef"
-									variant="plain"
-								/>
 								<button
 									class="button primary"
 									id="loginButton"
@@ -192,53 +159,6 @@ onMounted(async () => {});
 										</span>
 									</span>
 									<!-- <span class="buttonText">Get Login Code</span> -->
-									<!-- <span class="buttonFeedback">
-								<span class="buttonFeedbackSuccess">
-									<Check />
-								</span>
-								<span class="buttonFeedbackError">
-									<X />
-								</span>
-								<span class="buttonFeedbackPending">
-									<Loader class="spin" />
-								</span>
-							</span> -->
-								</button>
-							</div>
-						</Transition>
-						<Transition name="fade">
-							<div class="inputWrapper">
-								<input
-									class="input"
-									id="verifyInput"
-									:data-field="`verify`"
-									v-model="auth_code"
-									type="text"
-									required
-									autocomplete="off"
-									autocorrect="off"
-									autocapitalize="off"
-									spellcheck="false"
-									@keyup.enter="async (event: Event) => await loginSubmit(event)"
-									:error="verifyMessages.length > 0"
-									:error-messages="verifyMessages"
-									:readonly="!verify"
-									ref="verifyRef"
-									:disabled="!verify"
-									variant="plain"
-								/>
-								<button
-									class="button primary"
-									id="verifyButton"
-									@click="async (event: Event) => await verifyRequest(event as Event)"
-									:disabled="auth_code.length === 0 || !verify"
-								>
-									<span class="buttonInitial">
-										<span class="buttonIcon">
-											<KeySquare />
-										</span>
-									</span>
-									<!-- <span class="buttonText">Login</span> -->
 									<!-- <span class="buttonFeedback">
 								<span class="buttonFeedbackSuccess">
 									<Check />

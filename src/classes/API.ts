@@ -135,19 +135,9 @@ class API {
 		return this.returnResponse;
 	};
 
-	login = async (email: string, password: string = ""): Promise<types.KeyValue> => {
-		const requestParams: types.KeyValue = {};
-		requestParams.email = email;
-		if (password) {
-			requestParams.password = password;
-		}
-		this.returnResponse = await this.apiRequest("POST", "/login-auth", requestParams);
-		return this.returnResponse;
-	};
-
-	verify = async (
+	login = async (
 		email: string,
-		auth_code: string,
+		password: string,
 		user_agent: string | null = null,
 		IP: string | null = null,
 		latitude: number | null = null,
@@ -155,7 +145,7 @@ class API {
 	): Promise<types.KeyValue> => {
 		const requestParams: types.KeyValue = {};
 		requestParams.email = email;
-		requestParams.auth_code = auth_code;
+		requestParams.password = password;
 		if (user_agent) {
 			requestParams.user_agent = user_agent;
 		}
@@ -166,11 +156,8 @@ class API {
 			requestParams.latitude = latitude;
 			requestParams.longitude = longitude;
 		}
-		if (visitor_id) {
-			requestParams.visitor_id = visitor_id;
-		}
 		requestParams.user_date = moment().format("YYYY-MM-DD");
-		this.returnResponse = await this.apiRequest("POST", "/verify-auth", requestParams);
+		this.returnResponse = await this.apiRequest("POST", "/login-auth", requestParams);
 		if (this.returnResponse.authenticated === true) {
 			if (localStorage.getItem(this.appStore.loginTokenKey)) {
 				localStorage.removeItem(this.appStore.loginTokenKey);
