@@ -533,7 +533,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 #header {
-	display: none;
+	display: none !important;
 }
 .skillList {
 	margin-left: 0px;
