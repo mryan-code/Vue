@@ -37,6 +37,7 @@ const loginRequest = async (event) => {
 		geoLocation?.latitude as number | null,
 		geoLocation?.longitude as number | null,
 	)) as types.KeyValue;
+	console.log("loginRequest", JSON.parse(JSON.stringify(loginRequest)));
 	if (loginRequest.authenticated === true) {
 		// await appStore.buttonFeedback(buttonElement, false, false, false);
 		//close login dialogue
