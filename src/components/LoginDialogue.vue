@@ -41,15 +41,15 @@ const loginRequest = async (event) => {
 	if (loginRequest.token) {
 		// await appStore.buttonFeedback(buttonElement, false, false, false);
 
-		if (loginRequest.token) {
-			if (localStorage.getItem(appStore.loginTokenKey)) {
-				localStorage.removeItem(appStore.loginTokenKey);
-			}
-			localStorage.setItem(appStore.loginTokenKey, loginRequest.token);
+		if (localStorage.getItem(appStore.loginTokenKey)) {
+			localStorage.removeItem(appStore.loginTokenKey);
 		}
+		localStorage.setItem(appStore.loginTokenKey, loginRequest.token);
 
-		//close login dialogue
-		appStore.closeLoginDialogue();
+		appStore.authenticated = true;
+
+		appStore.loginDialogue = false;
+		loginMessages.value = [];
 	} else {
 		// await appStore.buttonFeedback(buttonElement, false, false, true);
 		if (loginRequest.message && Array.isArray(loginRequest.message)) {
