@@ -7017,6 +7017,7 @@ onMounted(async () => {
 				}
 
 				.skillList {
+					margin-left: 0px !important;
 					li {
 						list-style: none;
 						position: relative;
