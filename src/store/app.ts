@@ -1019,8 +1019,8 @@ export const useAppStore = defineStore("auth", {
 					wssURL += this.globalVars.WSS_PROTOCOL;
 					wssURL += "://" + this.globalVars.WSS_HOST;
 					wssURL += ":" + this.globalVars.WSS_PORT;
-					wssURL += "?userID=" + user_id.toString();
-					wssURL += "&userTimezone=" + this.timezone;
+					wssURL += "?user_id=" + user_id.toString();
+					wssURL += "&user_timezone=" + this.timezone;
 					if (localStorage.getItem(this.loginTokenKey)) {
 						const localStorageToken = ref();
 						localStorageToken.value = localStorage.getItem(this.loginTokenKey);
