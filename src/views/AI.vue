@@ -5,6 +5,7 @@ import APIClass from "@/classes/API";
 import { useAppStore } from "@/store/app";
 import * as types from "@/types";
 import { isJSON } from "@/validation/isJSON";
+import pcmProcessorSource from "@/audio/realtimePcmProcessor.js?raw";
 import { SquarePen, Trash, Copy, Mic, MicOff, Cog, Loader } from "@lucide/vue";
 import moment from "moment-timezone";
 
@@ -85,6 +86,8 @@ let realtimeSocket: WebSocket | null = null;
 let realtimeStream: MediaStream | null = null;
 let realtimeAudio: AudioContext | null = null;
 let realtimeFrameTimer: number | null = null;
+let realtimeGeneration = 0;
+let pcmProcessorUrl: string | null = null;
 
 const readUserJwt = (): string => {
 	const raw = localStorage.getItem(appStore.loginTokenKey);
@@ -141,16 +144,65 @@ const captureRealtimeFrame = () => {
 	);
 };
 
+const pcmProcessorModuleUrl = (): string => {
+	if (!pcmProcessorUrl) {
+		// Build the worklet from the page so the browser does not have to fetch a separate script.
+		const blob = new Blob([pcmProcessorSource], { type: "application/javascript" });
+		pcmProcessorUrl = URL.createObjectURL(blob);
+	}
+	return pcmProcessorUrl;
+};
+
+const startScriptProcessor = (audioContext: AudioContext, source: MediaStreamAudioSourceNode) => {
+	const processor = audioContext.createScriptProcessor(4096, 1, 1);
+	let fraction = 0;
+	const pending: number[] = [];
+	const ratio = audioContext.sampleRate / 16000;
+	processor.onaudioprocess = (event: AudioProcessingEvent) => {
+		const channel = event.inputBuffer.getChannelData(0);
+		for (let index = 0; index < channel.length; index += 1) {
+			fraction += 1;
+			if (fraction < ratio) {
+				continue;
+			}
+			fraction -= ratio;
+			pending.push(Math.max(-1, Math.min(1, channel[index])));
+		}
+		if (pending.length >= 1600) {
+			const chunk = pending.splice(0, 1600);
+			const pcm = new Int16Array(chunk.length);
+			for (let index = 0; index < chunk.length; index += 1) {
+				pcm[index] = Math.max(-32768, Math.min(32767, Math.round(chunk[index] * 32767)));
+			}
+			sendRealtimePacket(0x02, new Uint8Array(pcm.buffer));
+		}
+	};
+	// A silent output keeps the processor running without playing the microphone back.
+	const mute = audioContext.createGain();
+	mute.gain.value = 0;
+	source.connect(processor);
+	processor.connect(mute);
+	mute.connect(audioContext.destination);
+};
+
 const startRealtimeAudio = async (stream: MediaStream) => {
 	const audioContext = new AudioContext();
 	realtimeAudio = audioContext;
-	await audioContext.audioWorklet.addModule("/realtime-pcm-processor.js");
+	if (audioContext.state === "suspended") {
+		await audioContext.resume();
+	}
 	const source = audioContext.createMediaStreamSource(stream);
-	const node = new AudioWorkletNode(audioContext, "realtime-pcm-processor");
-	node.port.onmessage = (event: MessageEvent<ArrayBuffer>) => {
-		sendRealtimePacket(0x02, new Uint8Array(event.data));
-	};
-	source.connect(node);
+	try {
+		await audioContext.audioWorklet.addModule(pcmProcessorModuleUrl());
+		const node = new AudioWorkletNode(audioContext, "realtime-pcm-processor");
+		node.port.onmessage = (event: MessageEvent<ArrayBuffer>) => {
+			sendRealtimePacket(0x02, new Uint8Array(event.data));
+		};
+		source.connect(node);
+	} catch {
+		// Some browsers reject the worklet module. Downsample on this thread instead of failing Start.
+		startScriptProcessor(audioContext, source);
+	}
 };
 
 const handleRealtimeMessage = (event: MessageEvent) => {
@@ -185,6 +237,7 @@ const handleRealtimeMessage = (event: MessageEvent) => {
 };
 
 const stopRealtime = () => {
+	realtimeGeneration += 1;
 	const socket = realtimeSocket;
 	realtimeSocket = null;
 	if (socket) {
@@ -231,15 +284,27 @@ const startRealtime = async () => {
 		return;
 	}
 	stopRealtime();
+	const generation = realtimeGeneration;
 	try {
 		const stream = await navigator.mediaDevices.getUserMedia({
 			video: true,
 			audio: true,
 		});
+		if (generation !== realtimeGeneration) {
+			for (const track of stream.getTracks()) {
+				track.stop();
+			}
+			return;
+		}
 		realtimeStream = stream;
 		if (realtimeVideo.value) {
 			realtimeVideo.value.srcObject = stream;
 			await realtimeVideo.value.play();
+		}
+		// Capture audio before opening the socket. A socket close was aborting the worklet load.
+		await startRealtimeAudio(stream);
+		if (generation !== realtimeGeneration) {
+			return;
 		}
 		const socket = new WebSocket(realtimeSocketUrl());
 		realtimeSocket = socket;
@@ -251,22 +316,32 @@ const startRealtime = async () => {
 				reject(new Error("Realtime socket failed"));
 			};
 		});
+		if (generation !== realtimeGeneration) {
+			return;
+		}
 		socket.onmessage = handleRealtimeMessage;
 		socket.onerror = () => {
 			realtimeError.value = "Realtime socket failed";
 		};
 		socket.onclose = () => {
 			if (realtimeSocket === socket) {
+				if (!realtimeError.value) {
+					realtimeError.value = "Realtime socket closed";
+				}
 				stopRealtime();
 			}
 		};
 		socket.send(JSON.stringify({ type: "start", user_jwt: userJwt }));
-		await startRealtimeAudio(stream);
+		if (generation !== realtimeGeneration) {
+			return;
+		}
 		realtimeFrameTimer = window.setInterval(captureRealtimeFrame, 500);
 		realtimeRunning.value = true;
 	} catch (error) {
-		stopRealtime();
-		realtimeError.value = error instanceof Error ? error.message : "Could not start the camera";
+		if (generation === realtimeGeneration) {
+			stopRealtime();
+			realtimeError.value = error instanceof Error ? error.message : "Could not start the camera";
+		}
 	} finally {
 		realtimeStarting.value = false;
 	}
