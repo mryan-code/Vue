@@ -1340,8 +1340,7 @@ a {
 // 	display: none !important;
 // }
 #visual-resume #main,
-#login #main,
-#error #main {
+#login #main {
 	// position: relative !important;
 	// left: 0px !important;
 	// top: 0px !important;
@@ -1350,7 +1349,7 @@ a {
 	min-height: 100vh !important;
 	transition: none var(--duration) var(--function) !important;
 	// Keep the same header offset as the rest of the app.
-	padding: var(--header-height) 0 0 0 !important;
+	padding: 0 0 0 0 !important;
 	margin: 0px !important;
 }
 #visual-resume #mainContent,
