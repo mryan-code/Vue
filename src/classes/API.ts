@@ -158,12 +158,6 @@ class API {
 		}
 		requestParams.user_date = moment().format("YYYY-MM-DD");
 		this.returnResponse = await this.apiRequest("POST", "/login-auth", requestParams);
-		if (this.returnResponse.authenticated === true) {
-			if (localStorage.getItem(this.appStore.loginTokenKey)) {
-				localStorage.removeItem(this.appStore.loginTokenKey);
-			}
-			localStorage.setItem(this.appStore.loginTokenKey, this.returnResponse.token);
-		}
 		return this.returnResponse;
 	};
 

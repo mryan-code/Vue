@@ -38,8 +38,16 @@ const loginRequest = async (event) => {
 		geoLocation?.longitude as number | null,
 	)) as types.KeyValue;
 	console.log("loginRequest", JSON.parse(JSON.stringify(loginRequest)));
-	if (loginRequest.authenticated === true) {
+	if (loginRequest.token) {
 		// await appStore.buttonFeedback(buttonElement, false, false, false);
+
+		if (loginRequest.token) {
+			if (localStorage.getItem(appStore.loginTokenKey)) {
+				localStorage.removeItem(appStore.loginTokenKey);
+			}
+			localStorage.setItem(appStore.loginTokenKey, loginRequest.token);
+		}
+
 		//close login dialogue
 		appStore.closeLoginDialogue();
 	} else {
