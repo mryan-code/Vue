@@ -6773,11 +6773,8 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
-#header {
-	display: none !important;
-}
 .skillList {
-	margin-left: 0px;
+	margin-left: 0px !important;
 }
 #slideWrapper {
 	list-style: none;
