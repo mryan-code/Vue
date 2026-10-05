@@ -298,10 +298,6 @@ const displayPicturePuzzle = async () => {
 	}
 };
 const slidePicturePuzzlePiece = async (event: Event) => {
-	if (picturePuzzleStarted.value !== true) {
-		picturePuzzleStarted.value = true;
-		picturePuzzleStart.value = moment().format("YYYY-MM-DD HH:mm:ss");
-	}
 	stopPicturePuzzleAxisLock();
 	const item = (event as Event & { item?: HTMLElement }).item;
 	const pieceId = Number(item?.dataset?.pieceId);
