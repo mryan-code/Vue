@@ -149,7 +149,7 @@ onUnmounted(async () => {
 						</div>
 					</router-link>
 					<div id="headerNavRight">
-						<div class="headerNavRightItem noselect">
+						<!-- <div class="headerNavRightItem noselect">
 							<div class="headerNavItemHeader">
 								<a
 									class="headerNavItemHeaderLink"
@@ -162,7 +162,7 @@ onUnmounted(async () => {
 									</div>
 								</a>
 							</div>
-						</div>
+						</div> -->
 						<div class="headerNavRightItem noselect">
 							<div class="headerNavItemHeader">
 								<a
