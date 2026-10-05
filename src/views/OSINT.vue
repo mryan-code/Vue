@@ -27,42 +27,44 @@ onBeforeUnmount(() => {});
 </script>
 
 <template>
-	<div class="pageTitle">
-		<h1>OSINT</h1>
-	</div>
-	<div class="pageContent">
-		<p>Welcome to the OSINT page.</p>
-		<div class="styledBlockForm">
-			<div class="formRow">
-				<span class="label">User's Name</span>
-				<input type="text" v-model="userName" @keyup="async (event: Event) => await osintRequest(event)" />
-			</div>
-			<div class="formRow">
-				<span class="label">User's Email</span>
-				<input type="text" v-model="userEmail" @keyup="async (event: Event) => await osintRequest(event)" />
-			</div>
-			<div class="formRow">
-				<span class="label">User's Phone</span>
-				<input type="text" v-model="userPhone" @keyup="async (event: Event) => await osintRequest(event)" />
-			</div>
+	<div class="osintContainer" v-if="appStore.authenticated">
+		<div class="pageTitle">
+			<h1>OSINT</h1>
 		</div>
-		<div class="styledTable">
-			<table>
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Email</th>
-						<th>Phone</th>
-					</tr>
-				</thead>
-				<!-- <tbody v-if="osintResults.length > 0">
+		<div class="pageContent">
+			<p>Welcome to the OSINT page.</p>
+			<div class="styledBlockForm">
+				<div class="formRow">
+					<span class="label">User's Name</span>
+					<input type="text" v-model="userName" @keyup="async (event: Event) => await osintRequest(event)" />
+				</div>
+				<div class="formRow">
+					<span class="label">User's Email</span>
+					<input type="text" v-model="userEmail" @keyup="async (event: Event) => await osintRequest(event)" />
+				</div>
+				<div class="formRow">
+					<span class="label">User's Phone</span>
+					<input type="text" v-model="userPhone" @keyup="async (event: Event) => await osintRequest(event)" />
+				</div>
+			</div>
+			<div class="styledTable">
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Email</th>
+							<th>Phone</th>
+						</tr>
+					</thead>
+					<!-- <tbody v-if="osintResults.length > 0">
 					<tr v-for="result in osintResults" :key="result.id">
 						<td>{{ result.first_name }} {{ result.last_name }}</td>
 						<td>{{ result.email }}</td>
 						<td>{{ result.phone }}</td>
 					</tr>
 				</tbody> -->
-			</table>
+				</table>
+			</div>
 		</div>
 	</div>
 </template>

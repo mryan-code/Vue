@@ -371,93 +371,99 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<v-tabs v-model="aiTab" @update:modelValue="async () => await switchAiTab(aiTab)" class="aiTabs">
-		<v-tab value="image">Image</v-tab>
-		<v-tab value="text">Text</v-tab>
-		<v-tab value="real-time">Real-Time</v-tab>
-	</v-tabs>
-	<v-tabs-window v-model="aiTab">
-		<v-tabs-window-item value="image">
-			<div class="real-time-container">
-				<div class="real-time-content">
-					<div class="real-time-input">
-						<textarea
-							v-model="aiPrompt"
-							id="promptInput"
-							@keydown="async (event) => await aiKeydown(event)"
-							placeholder="Enter a prompt to generate an image..."
-						></textarea>
+	<div class="aiContainer" v-if="appStore.authenticated">
+		<v-tabs v-model="aiTab" @update:modelValue="async () => await switchAiTab(aiTab)" class="aiTabs">
+			<v-tab value="image">Image</v-tab>
+			<v-tab value="text">Text</v-tab>
+			<v-tab value="real-time">Real-Time</v-tab>
+		</v-tabs>
+		<v-tabs-window v-model="aiTab">
+			<v-tabs-window-item value="image">
+				<div class="real-time-container">
+					<div class="real-time-content">
+						<div class="real-time-input">
+							<textarea
+								v-model="aiPrompt"
+								id="promptInput"
+								@keydown="async (event) => await aiKeydown(event)"
+								placeholder="Enter a prompt to generate an image..."
+							></textarea>
+							<div class="submitWrapper">
+								<button
+									class="button primary"
+									@click="async (event) => aiRequest()"
+									:disabled="!aiPrompt"
+								>
+									Generate
+								</button>
+								<Transition name="fade">
+									<div class="avatarLoader" v-if="aiIsLoading">
+										<Loader class="spin" />
+									</div>
+								</Transition>
+							</div>
+							<div class="imageContainer" v-if="aiImageResponse.length > 0">
+								<img
+									v-for="image in aiImageResponse"
+									:src="`data:${image.image_mime};base64,${image.image_base64}`"
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</v-tabs-window-item>
+			<v-tabs-window-item value="text">
+				<textarea
+					v-model="aiPrompt"
+					id="promptInput"
+					@keydown="async (event) => await aiKeydown(event)"
+					placeholder="Enter a prompt to generate text..."
+				></textarea>
+				<div class="submitWrapper">
+					<button class="button primary" @click="async (event) => aiRequest()" :disabled="!aiPrompt">
+						Generate
+					</button>
+					<Transition name="fade">
+						<div class="avatarLoader" v-if="aiIsLoading">
+							<Loader class="spin" />
+						</div>
+					</Transition>
+				</div>
+			</v-tabs-window-item>
+			<v-tabs-window-item value="real-time">
+				<div class="real-time-container">
+					<div class="real-time-content">
+						<video ref="realtimeVideo" class="realtimePreview" autoplay muted playsinline></video>
+						<canvas ref="realtimeCanvas" class="realtimeCanvas"></canvas>
 						<div class="submitWrapper">
-							<button class="button primary" @click="async (event) => aiRequest()" :disabled="!aiPrompt">
-								Generate
+							<button
+								class="button primary"
+								type="button"
+								@click="startRealtime"
+								:disabled="realtimeRunning || realtimeStarting"
+							>
+								Start
 							</button>
-							<Transition name="fade">
-								<div class="avatarLoader" v-if="aiIsLoading">
-									<Loader class="spin" />
-								</div>
-							</Transition>
+							<button class="button" type="button" @click="stopRealtime" :disabled="!realtimeRunning">
+								Stop
+							</button>
 						</div>
-						<div class="imageContainer" v-if="aiImageResponse.length > 0">
-							<img
-								v-for="image in aiImageResponse"
-								:src="`data:${image.image_mime};base64,${image.image_base64}`"
-							/>
+						<p v-if="realtimeError" class="realtimeError">{{ realtimeError }}</p>
+						<p v-if="realtimeStatus" class="realtimeStatus">{{ realtimeStatus }}</p>
+						<div class="realtimeEvaluation">
+							<p><strong>Scene</strong> {{ realtimeScene }}</p>
+							<p><strong>People</strong> {{ realtimePeople }}</p>
+							<p><strong>Emotion</strong> {{ realtimeEmotion }}</p>
+							<p><strong>Text</strong> {{ realtimeText }}</p>
+							<p><strong>Heard</strong> {{ realtimeHeard }}</p>
+							<p><strong>Transcript</strong> {{ realtimeTranscript }}</p>
+							<p><strong>Reply</strong> {{ realtimeReply }}</p>
 						</div>
 					</div>
 				</div>
-			</div>
-		</v-tabs-window-item>
-		<v-tabs-window-item value="text">
-			<textarea
-				v-model="aiPrompt"
-				id="promptInput"
-				@keydown="async (event) => await aiKeydown(event)"
-				placeholder="Enter a prompt to generate text..."
-			></textarea>
-			<div class="submitWrapper">
-				<button class="button primary" @click="async (event) => aiRequest()" :disabled="!aiPrompt">
-					Generate
-				</button>
-				<Transition name="fade">
-					<div class="avatarLoader" v-if="aiIsLoading">
-						<Loader class="spin" />
-					</div>
-				</Transition>
-			</div>
-		</v-tabs-window-item>
-		<v-tabs-window-item value="real-time">
-			<div class="real-time-container">
-				<div class="real-time-content">
-					<video ref="realtimeVideo" class="realtimePreview" autoplay muted playsinline></video>
-					<canvas ref="realtimeCanvas" class="realtimeCanvas"></canvas>
-					<div class="submitWrapper">
-						<button
-							class="button primary"
-							type="button"
-							@click="startRealtime"
-							:disabled="realtimeRunning || realtimeStarting"
-						>
-							Start
-						</button>
-						<button class="button" type="button" @click="stopRealtime" :disabled="!realtimeRunning">
-							Stop
-						</button>
-					</div>
-					<p v-if="realtimeError" class="realtimeError">{{ realtimeError }}</p>
-					<p v-if="realtimeStatus" class="realtimeStatus">{{ realtimeStatus }}</p>
-					<div class="realtimeEvaluation">
-						<p><strong>Scene</strong> {{ realtimeScene }}</p>
-						<p><strong>People</strong> {{ realtimePeople }}</p>
-						<p><strong>Emotion</strong> {{ realtimeEmotion }}</p>
-						<p><strong>Text</strong> {{ realtimeText }}</p>
-						<p><strong>Heard</strong> {{ realtimeHeard }}</p>
-						<p><strong>Transcript</strong> {{ realtimeTranscript }}</p>
-						<p><strong>Reply</strong> {{ realtimeReply }}</p>
-					</div>
-				</div>
-			</div>
-		</v-tabs-window-item>
-	</v-tabs-window>
+			</v-tabs-window-item>
+		</v-tabs-window>
+	</div>
 </template>
 
 <style scoped>
