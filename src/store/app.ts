@@ -642,7 +642,9 @@ export const useAppStore = defineStore("auth", {
 					this.authenticated = false;
 					this.headerMenuOpen = false;
 					this.headerMenuType = "";
-					await this.router?.push("/login");
+					await this.closeWSS("main");
+					await this.closeWSS("llm");
+					// await this.router?.push("/");
 				}
 			}
 		},
