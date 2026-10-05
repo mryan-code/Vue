@@ -499,6 +499,13 @@ body,
 						width: fit-content;
 						display: inline-block;
 						vertical-align: middle;
+						span {
+							display: inline-block;
+							vertical-align: middle;
+							height: 100%;
+							color: var(--primary-text);
+							text-decoration: none;
+						}
 
 						img {
 							width: 100%;
@@ -509,8 +516,8 @@ body,
 						svg {
 							// Deprecated code: icons stretched to the full header height.
 							// height: 100%;
-							height: 18px;
-							width: 18px;
+							height: 100%;
+							width: auto;
 							filter: none;
 							stroke: var(--headline);
 							text-shadow: none;

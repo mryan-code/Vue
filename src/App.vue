@@ -171,7 +171,7 @@ onUnmounted(async () => {
 									@click="async (event) => await appStore.logout(event)"
 									v-if="appStore.authenticated == true"
 								>
-									<div class="headerNavItemHeaderIcon">Logout <LogOut /></div>
+									<div class="headerNavItemHeaderIcon"><span>Logout</span> <LogOut /></div>
 								</a>
 								<a
 									class="headerNavItemHeaderLink"
@@ -179,7 +179,7 @@ onUnmounted(async () => {
 									@click="async (event) => await appStore.toggleLoginDialogue()"
 									v-else
 								>
-									<div class="headerNavItemHeaderIcon">Login <LogIn /></div>
+									<div class="headerNavItemHeaderIcon"><span>Login</span> <LogIn /></div>
 								</a>
 							</div>
 						</div>
