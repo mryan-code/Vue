@@ -31,8 +31,6 @@ const picturePuzzleDragLock = ref<{
 	max_translate: number;
 } | null>(null);
 
-const picturePuzzleStart = ref(moment().format("YYYY-MM-DD HH:mm:ss"));
-const picturePuzzleStarted = ref(false);
 const base64ToBytes = (value: string): Uint8Array => {
 	const cleaned = value.replace(/\s/g, "");
 	const binary = atob(cleaned);
@@ -402,9 +400,6 @@ onBeforeUnmount(() => {
 					<p>A picture puzzle game built with Vue.js and TypeScript.</p>
 				</div>
 				<div class="portfolioItemContent">
-					<div class="picturePuzzleStarted" v-if="picturePuzzleStarted == true">
-						<p>Started: {{ picturePuzzleStart }}</p>
-					</div>
 					<div id="picturePuzzleForm">
 						<div class="picturePuzzleFormItem">
 							<label for="picturePuzzleGridSize">Grid Size</label>
