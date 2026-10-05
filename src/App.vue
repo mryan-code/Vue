@@ -171,9 +171,7 @@ onUnmounted(async () => {
 									@click="async (event) => await appStore.logout(event)"
 									v-if="appStore.authenticated == true"
 								>
-									<div class="headerNavItemHeaderIcon">
-										<LogOut />
-									</div>
+									<div class="headerNavItemHeaderIcon">Logout <LogOut /></div>
 								</a>
 								<a
 									class="headerNavItemHeaderLink"
@@ -181,9 +179,7 @@ onUnmounted(async () => {
 									@click="async (event) => await appStore.toggleLoginDialogue()"
 									v-else
 								>
-									<div class="headerNavItemHeaderIcon">
-										<LogIn />
-									</div>
+									<div class="headerNavItemHeaderIcon">Login <LogIn /></div>
 								</a>
 							</div>
 						</div>
@@ -196,8 +192,8 @@ onUnmounted(async () => {
 								@click="async (event) => await appStore.toggleHeaderMenu(event, 'menu')"
 							>
 								<LayoutGrid />
-								<span class="headerPagePillLabel">{{ router.currentRoute.value.name }}</span>
-								<ChevronDown />
+								<!-- <span class="headerPagePillLabel">{{ router.currentRoute.value.name }}</span>
+								<ChevronDown /> -->
 							</a>
 						</div>
 						<v-dialog
