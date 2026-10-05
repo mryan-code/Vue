@@ -105,51 +105,51 @@ type LandingShot = {
 };
 
 // Stable 0-1 value so the star field does not jump on each render.
-const mix = ( seed: number ) => {
-	const value = Math.sin( seed * 127.1 ) * 43758.5453;
-	return value - Math.floor( value );
+const mix = (seed: number) => {
+	const value = Math.sin(seed * 127.1) * 43758.5453;
+	return value - Math.floor(value);
 };
 
 // A star in either the hero night sky or the cloudy sky under the chart.
-const makeStar = ( index: number , top: string ): LandingStar => {
-	const size = mix( index + 3 ) > 0.72 ? 3 : 2;
+const makeStar = (index: number, top: string): LandingStar => {
+	const size = mix(index + 3) > 0.72 ? 3 : 2;
 	return {
-		left: `${( mix( index + 1 ) * 92 + 4 ).toFixed( 2 )}%`,
+		left: `${(mix(index + 1) * 92 + 4).toFixed(2)}%`,
 		top: top,
 		size: `${size}px`,
 		glow: `${size + 2}px`,
-		dur: `${( 3.2 + mix( index + 21 ) * 3.4 ).toFixed( 2 )}s`,
-		delay: `${( mix( index + 31 ) * 4 ).toFixed( 2 )}s`,
+		dur: `${(3.2 + mix(index + 21) * 3.4).toFixed(2)}s`,
+		delay: `${(mix(index + 31) * 4).toFixed(2)}s`,
 	};
 };
 
 // vh, not a percent of the whole page, so the first screen is actually a sky.
-const stars: LandingStar[] = Array.from( { length: 28 } , ( _star , index ) => {
-	return makeStar( index , `${( 5 + mix( index + 11 ) * 68 ).toFixed( 1 )}vh` );
-} );
+const stars: LandingStar[] = Array.from({ length: 28 }, (_star, index) => {
+	return makeStar(index, `${(5 + mix(index + 11) * 68).toFixed(1)}vh`);
+});
 
 // The band under the chart. These sit on the cloud photograph, above the hills.
-const groundStars: LandingStar[] = Array.from( { length: 16 } , ( _star , index ) => {
+const groundStars: LandingStar[] = Array.from({ length: 16 }, (_star, index) => {
 	const seed = index + 80;
-	return makeStar( seed , `${( 8 + mix( seed + 11 ) * 44 ).toFixed( 1 )}%` );
-} );
+	return makeStar(seed, `${(8 + mix(seed + 11) * 44).toFixed(1)}%`);
+});
 
 // Streaks that cross the hero, then wait before repeating.
-const shots: LandingShot[] = Array.from( { length: 6 } , ( _shot , index ) => {
+const shots: LandingShot[] = Array.from({ length: 6 }, (_shot, index) => {
 	return {
-		left: `${( 8 + index * 14 ) % 78}%`,
+		left: `${(8 + index * 14) % 78}%`,
 		top: `${6 + index * 7}%`,
-		dx: `${300 + Math.round( mix( index + 41 ) * 160 )}px`,
-		dy: `${150 + Math.round( mix( index + 51 ) * 110 )}px`,
-		dur: `${( 6 + mix( index + 61 ) * 2 ).toFixed( 1 )}s`,
-		delay: `${( 0.4 + index * 1.15 ).toFixed( 1 )}s`,
+		dx: `${300 + Math.round(mix(index + 41) * 160)}px`,
+		dy: `${150 + Math.round(mix(index + 51) * 110)}px`,
+		dur: `${(6 + mix(index + 61) * 2).toFixed(1)}s`,
+		delay: `${(0.4 + index * 1.15).toFixed(1)}s`,
 	};
-} );
+});
 
 // Scroll shifts. Far layers move more than near ones, which is the parallax.
-const skyShift = ref( 0 );
-const hillShift = ref( 0 );
-const bushShift = ref( 0 );
+const skyShift = ref(0);
+const hillShift = ref(0);
+const bushShift = ref(0);
 let parallaxFrame = 0;
 let parallaxListening = false;
 
@@ -162,50 +162,46 @@ const updateParallax = () => {
 };
 
 const onScroll = () => {
-	if ( parallaxFrame )
-	{
+	if (parallaxFrame) {
 		return;
 	}
-	parallaxFrame = window.requestAnimationFrame( updateParallax );
+	parallaxFrame = window.requestAnimationFrame(updateParallax);
 };
 
-onMounted( () => {
-	const reduceMotion = window.matchMedia( "(prefers-reduced-motion: reduce)" ).matches;
-	if ( reduceMotion )
-	{
+onMounted(() => {
+	const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+	if (reduceMotion) {
 		return;
 	}
 	parallaxListening = true;
-	window.addEventListener( "scroll" , onScroll , { passive: true } );
+	window.addEventListener("scroll", onScroll, { passive: true });
 	updateParallax();
-} );
+});
 
-onBeforeUnmount( () => {
-	if ( parallaxListening )
-	{
-		window.removeEventListener( "scroll" , onScroll );
+onBeforeUnmount(() => {
+	if (parallaxListening) {
+		window.removeEventListener("scroll", onScroll);
 	}
-	if ( parallaxFrame )
-	{
-		window.cancelAnimationFrame( parallaxFrame );
+	if (parallaxFrame) {
+		window.cancelAnimationFrame(parallaxFrame);
 	}
-} );
+});
 
 const faqs: LandingFaq[] = [
 	{
 		number: "01",
-		question: "Why Vue?",
-		answer: "This site has both a frontend and a backend. The frontend is built with Vue.js and TypeScript, while the backend is built with Node.js and TypeScript. The frontend uses Cypress for testing, although I personally prefer Selenium. I like Vue because it gives me a lot of functionality in one package, but I’m not married to it. If another framework is a better fit for a project, I’m happy to use it.",
+		question: "The Stack?",
+		answer: "This site has both a frontend and a two backends. The frontend is built with Vue.js and TypeScript, while the two backends are built with Node.js and TypeScript, then Python with FastAPI. The frontend uses Cypress for testing, although I personally prefer Selenium. I like Vue because it gives me a lot of functionality in one package, but I’m not married to it. If another framework is a better fit for a project, I’m happy to use it.",
 	},
 	{
 		number: "02",
 		question: "Why PostgreSQL?",
-		answer: "The backend uses Jest for testing and Sequelize as the ORM, with PostgreSQL handling the database. I normally prefer MySQL, but PostgreSQL made more sense for this project, particularly because of the AI component.",
+		answer: "The backend uses Jest for testing and Sequelize as the ORM, with PostgreSQL handling the database. I normally prefer MySQL, but PostgreSQL made more sense for this project, particularly because of the AI component. PostgreSQL solved the context window issue with the LLM.",
 	},
 	{
 		number: "03",
 		question: "Why a second backend?",
-		answer: "There’s also a second backend written in Python using FastAPI. That handles the AI API and keeps the LLM functionality separate from the main application.",
+		answer: "There’s also a second backend written in Python using FastAPI. That handles the AI API and keeps the LLM functionality separate from the main application. It also allows for the LLM to be scaled independently of the main application. The LLM can be hosted on a separate machine, as it's heavier than the main application.",
 	},
 	{
 		number: "04",
@@ -222,7 +218,6 @@ const faqs: LandingFaq[] = [
 
 <template>
 	<div class="landing">
-		<!-- Stars, streaks, and hill layers. They drift at different speeds while the page scrolls. -->
 		<div class="landingScene" aria-hidden="true">
 			<div class="landingWash" :style="{ transform: `translate3d(0, ${skyShift}px, 0)` }"></div>
 			<span
@@ -262,22 +257,7 @@ const faqs: LandingFaq[] = [
 					<span class="landingShootTrail"></span>
 				</span>
 			</span>
-			<!--
-				Deprecated code: solid green silhouettes. They sat on top of the photograph as a hard edge.
-				The green is now the atmosphere wash inside .landingGround, feathered into the sky and hills.
-			-->
 		</div>
-		<!--
-			Deprecated code: six static dots. Replaced by the twinkling field and shooting stars above.
-			<div class="landingDots" aria-hidden="true">
-				<span style="top: 18%; left: 12%"></span>
-				<span style="top: 32%; left: 78%"></span>
-				<span style="top: 46%; left: 22%"></span>
-				<span style="top: 58%; left: 88%"></span>
-				<span style="top: 70%; left: 8%"></span>
-				<span style="top: 24%; left: 64%"></span>
-			</div>
-		-->
 
 		<section class="landingHero">
 			<h1 class="landingHeroTitle">
@@ -314,22 +294,8 @@ const faqs: LandingFaq[] = [
 			</div>
 		</section>
 
-		<!--
-			Green haze, sky, hills, and foreground, stacked the way Freebuff does.
-			The top of the stack fades into the page so the green does not end in a hard line.
-		-->
 		<div class="landingGround" aria-hidden="true">
 			<div class="landingGroundWash" :style="{ transform: `translate3d(0, ${skyShift * 0.12}px, 0)` }"></div>
-			<!--
-				Deprecated code: the dune photograph. Cropped to a thin band, it showed as a brown ridge under the stack card.
-				The night sky is the page background now, so that brown is gone.
-				<img
-					class="landingLayer landingSkyBg"
-					src="/landing/sky-bg.webp"
-					alt=""
-					:style="{ transform: `translate3d(0, ${skyShift * 0.18}px, 0)` }"
-				/>
-			-->
 			<span
 				class="landingStar"
 				v-for="(star, index) in groundStars"
@@ -357,7 +323,6 @@ const faqs: LandingFaq[] = [
 				alt=""
 				:style="{ transform: `translate3d(0, ${bushShift * 0.2}px, 0)` }"
 			/>
-			<!-- Sage veil so the photograph comes out of the same green as the page, then falls back to the dunes. -->
 			<div class="landingGreenVeil"></div>
 			<div class="landingGroundFade"></div>
 		</div>
@@ -402,17 +367,6 @@ const faqs: LandingFaq[] = [
 			</nav>
 		</footer>
 	</div>
-
-	<!--
-		Deprecated code: the previous home page was a title and six paragraphs.
-		<div class="pageTitle">
-			<h1>Home</h1>
-		</div>
-		<div class="pageContent">
-			<p>Welcome to the home page.</p>
-			...bio paragraphs, now used as the FAQ answers above...
-		</div>
-	-->
 </template>
 
 <style lang="scss" scoped>
@@ -439,12 +393,7 @@ const faqs: LandingFaq[] = [
 	right: 0;
 	top: -8vh;
 	height: 78vh;
-	background: linear-gradient(
-		to bottom,
-		transparent 0%,
-		rgba(16, 36, 40, 0.55) 42%,
-		rgba(7, 8, 10, 0) 100%
-	);
+	background: linear-gradient(to bottom, transparent 0%, rgba(16, 36, 40, 0.55) 42%, rgba(7, 8, 10, 0) 100%);
 	will-change: transform;
 }
 
@@ -561,7 +510,13 @@ const faqs: LandingFaq[] = [
 // }
 
 :global([data-theme="light"]) .landingGroundWash {
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #d7e0d0 36%, #c5d0c0 62%, rgba(255, 255, 255, 0) 100%);
+	background: linear-gradient(
+		to bottom,
+		rgba(255, 255, 255, 0) 0%,
+		#d7e0d0 36%,
+		#c5d0c0 62%,
+		rgba(255, 255, 255, 0) 100%
+	);
 }
 
 :global([data-theme="light"]) .landingGreenVeil {
@@ -773,13 +728,7 @@ const faqs: LandingFaq[] = [
 	position: absolute;
 	z-index: 6;
 	inset: 0;
-	background: linear-gradient(
-		to bottom,
-		var(--body-bg) 0%,
-		transparent 8%,
-		transparent 62%,
-		var(--body-bg) 90%
-	);
+	background: linear-gradient(to bottom, var(--body-bg) 0%, transparent 8%, transparent 62%, var(--body-bg) 90%);
 }
 
 .landingProof {
