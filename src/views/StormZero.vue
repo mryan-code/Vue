@@ -107,7 +107,8 @@ const chatRequest = async () => {
 				if (llmResponse.results[0].prompt_id) {
 					await appStore
 						.getThread(llmResponse.results[0].prompt_id, null, true)
-						.then(async (thread: types.KeyValue[]) => {
+						// getThread returns undefined when the request does not succeed.
+						.then(async (thread: types.KeyValue[] | undefined) => {
 							appStore.thread.push(...(thread || []));
 						})
 						.then(async () => {
@@ -203,7 +204,8 @@ const togglePromptListen = async () => {
 const loadMoreThread = async () => {
 	await appStore
 		.getThread(null, loadMoreAmount.value, true)
-		.then(async (thread: types.KeyValue[]) => {
+		// getThread returns undefined when the request does not succeed.
+		.then(async (thread: types.KeyValue[] | undefined) => {
 			appStore.thread = [...(thread || []), ...appStore.thread];
 			if (appStore.totalAvailableThread > appStore.thread.length) {
 				appStore.showLoadMore = true;

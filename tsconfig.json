@@ -17,7 +17,9 @@
 		"noEmit": true,
 		"types": ["vite/client", "node"],
 		"paths": {
-			"@/*": ["./src/*"]
+			// ${configDir} keeps @/ anchored to this file. A relative ./src/* misses when the
+			// Vue language service resolves imports with the .vue file's directory as the current directory.
+			"@/*": ["${configDir}/src/*"]
 			// Deprecated: mapping @lucide/vue to dist/lucide-vue.d.ts resolved a relative path
 			// and dropped the package id. The package "typings" field already resolves that file.
 			// "@lucide/vue": ["./node_modules/@lucide/vue/dist/lucide-vue.d.ts"]
