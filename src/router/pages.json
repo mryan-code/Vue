@@ -14,20 +14,6 @@
 		"props": true
 	},
 	{
-		"path": "/storm-zero",
-		"name": "Storm Zero",
-		"meta": {
-			"page_id": "3",
-			"auth_required": 1,
-			"icon": null,
-			"auth_level": 3,
-			"slug": "storm-zero",
-			"location": 1
-		},
-		"component": "../views/StormZero.vue",
-		"props": true
-	},
-	{
 		"path": "/error",
 		"name": "Error",
 		"meta": {

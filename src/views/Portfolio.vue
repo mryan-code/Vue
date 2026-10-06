@@ -165,7 +165,7 @@ const constrainPicturePuzzleFallback = () => {
 const startPicturePuzzleAxisLock = (event: Event) => {
 	const item = (event as Event & { item?: HTMLElement }).item;
 	const pieceId = Number(item?.dataset?.pieceId);
-	const piece = picturePuzzleGrid.value.find((entry) => entry.piece_id === pieceId);
+	const piece = picturePuzzleGrid.value.find((entry: types.KeyValue) => entry.piece_id === pieceId);
 	if (!piece || piece.can_slide !== true) {
 		return;
 	}
@@ -301,7 +301,7 @@ const slidePicturePuzzlePiece = async (event: Event) => {
 	stopPicturePuzzleAxisLock();
 	const item = (event as Event & { item?: HTMLElement }).item;
 	const pieceId = Number(item?.dataset?.pieceId);
-	const piece = picturePuzzleGrid.value.find((entry) => entry.piece_id === pieceId);
+	const piece = picturePuzzleGrid.value.find((entry: types.KeyValue) => entry.piece_id === pieceId);
 	if (!piece || piece.can_slide !== true) {
 		return;
 	}

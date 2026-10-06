@@ -48,7 +48,7 @@ const aiRequest = async () => {
 			aiResponse.results.length > 0
 		) {
 			if (aiResponse.results[0].response || aiResponse.results[0].media || aiResponse.results[0].prompt_id) {
-				if (llmResponse.results[0].tts?.base64) {
+				if (aiResponse.results[0].tts?.base64) {
 					appStore.avatarTTS = JSON.parse(JSON.stringify(aiResponse.results[0].tts));
 				} else {
 					appStore.avatarTTS = null;
