@@ -489,35 +489,6 @@ onBeforeUnmount(() => {
 					</draggable>
 				</div>
 			</div>
-			<div class="portfolioItem">
-				<div class="portfolioItemTitle">
-					<h2>Code Sorting Puzzle</h2>
-				</div>
-				<div class="portfolioItemDescription">
-					<p>A code sorting puzzle game built with Vue.js and TypeScript.</p>
-				</div>
-				<div class="portfolioItemContent">
-					<p>
-						Consider the following programming task: "Given a positive input integer n, create a while loop
-						that utilizes arithmetic to store the frequency of each digit present in n in a dictionary
-						frequency_map.
-					</p>
-					<p>
-						The input number n will be provided as a numeric data type, not a string. For each loop
-						iteration, you must update frequency_map before reducing n."<br />Drag the pseudocode steps
-						below to arrange them into the correct order to create a valid solution for the above task.
-					</p>
-					<ul>
-						<li>digit = n mod 10</li>
-						<li>if digit is not in frequency_map keys</li>
-						<li>initialize an empty dictionary frequency_map</li>
-						<li>n = integer part of (n / 10)</li>
-						<li>else add 1 to the value of digit in frequency_map</li>
-						<li>while n is greater than 0</li>
-						<li>add digit to frequency_map with an initial value of 1</li>
-					</ul>
-				</div>
-			</div>
 		</div>
 	</div>
 </template>
