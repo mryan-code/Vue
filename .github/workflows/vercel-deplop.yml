@@ -12,19 +12,19 @@ permissions:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       DEPLOY_HOST: 'dev-domain.duckdns.org'
-      DEPLOY_PORT: '22'
+      DEPLOY_PORT: '777'
       DEPLOY_USERNAME: 'inkt'
       API_PATH: '~/Personal/API'
       SSH_KEEPALIVE_OPTIONS: "-o ServerAliveInterval=30 -o ServerAliveCountMax=4 -o TCPKeepAlive=yes"
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Fail before any remote side effect when the Vercel project is not linked in GitHub secrets.
       - name: Check Vercel secrets
