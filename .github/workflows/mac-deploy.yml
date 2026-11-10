@@ -1,10 +1,11 @@
 name: Deploy to HOST
-run-name: Deploy to HOST (${{ github.event.head_commit.timestamp }})
+# workflow_dispatch has no head_commit payload; github.sha is the commit this manual run deploys.
+run-name: Deploy to HOST (${{ github.sha }})
 
 on:
-  push:
-    branches:
-      - main  # Triggers the workflow anytime you push changes to the main branch
+  workflow_dispatch  # Manual only since 2026-11-10: the UI is hosted on Vercel now,
+  # so pushes to main no longer deploy to the mini or start the Vite server there.
+  # Run this workflow by hand if the mini deploy is ever needed again.
 
 jobs:
   deploy:
