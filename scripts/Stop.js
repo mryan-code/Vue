@@ -57,6 +57,16 @@ function getDescendantPids(rootPid, processTable) {
 	return Array.from(descendants);
 }
 
+function isFrontendBuild(command) {
+	// Bug fix: `vite build` used to match the dev-server rules. Stop then signaled that
+	// process group, which includes `npm run build`, so the host build died with
+	// SIGTERM (exit 143) while Vite was rendering chunks.
+	return (
+		/(?:^|[\s"'/])vite(?:\.js)?\s+build(?:\s|$)/.test(command) ||
+		/(?:^|\s)npm(?:\s+run)?\s+build(?:\s|$)/.test(command)
+	);
+}
+
 const processTable = parseProcessTable();
 const matchingProcesses = processTable.filter((processInfo) => {
 	// Match both the current Vite dev server and leftover Vue CLI processes during the deploy cutover.
@@ -65,6 +75,7 @@ const matchingProcesses = processTable.filter((processInfo) => {
 		processInfo.command.includes(projectRoot) &&
 		!processInfo.command.includes("scripts/Stop.js") &&
 		!processInfo.command.includes("vitest") &&
+		!isFrontendBuild(processInfo.command) &&
 		(processInfo.command.includes("vue-cli-service") ||
 			/\svite(\.js)?(\s|$)/.test(processInfo.command) ||
 			processInfo.command.includes("vite/bin/vite") ||

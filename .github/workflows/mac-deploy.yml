@@ -7,6 +7,15 @@ on:
   # so pushes to main no longer deploy to the mini or start the Vite server there.
   # Run this workflow by hand if the mini deploy is ever needed again.
 
+# Bug fix: a second deploy's stop step matched `vite build` and then signaled that
+# process group. The group includes `npm run build`, so the in-progress build died
+# with SIGTERM (bash "Terminated: 15", GitHub exit 143) while Vite was rendering chunks.
+# Queue the next run instead of overlapping, and do not cancel the active one:
+# cancel-in-progress would send that same SIGTERM.
+concurrency:
+  group: deploy-host
+  cancel-in-progress: false
+
 jobs:
   deploy:
     # Use DEPLOY_RUNNER repo variable (for example: self-hosted) when the target host is private-network only.
@@ -158,15 +167,29 @@ jobs:
             printf '%s\n%s\n%s\n' "$listener_pids" "$fuser_pids" "$lsof_pids" | tr ' ' '\n' | sed '/^$/d' | grep -E '^[0-9]+$' | sort -u
           }
 
+          # Bug fix: do not match `vite build`. Stop then signals that process group, which
+          # also contains `npm run build`, and the deploy exits 143 during "rendering chunks".
           get_app_pids() {
             ps -eo pid,args | awk -v deploy_path="$deploy_path" '
               index($0, deploy_path) && /vue-cli-service(\.js)?[[:space:]]+serve/ && !/awk/ { print $1; next }
-              index($0, deploy_path) && /vite(\.js)?([[:space:]]|$)/ && !/vitest/ && !/awk/ { print $1; next }
+              index($0, deploy_path) && /vite(\.js)?([[:space:]]|$)/ && !/vite(\.js)?[[:space:]]+build([[:space:]]|$)/ && !/vitest/ && !/awk/ { print $1; next }
               index($0, deploy_path) && /npm([[:space:]]+run)?[[:space:]]+start/ && !/awk/ { print $1; next }
               index($0, deploy_path) && /node([[:space:]]+.*)?vue-cli-service(\.js)?[[:space:]]+serve/ && !/awk/ { print $1; next }
-              index($0, deploy_path) && /node([[:space:]]+.*)?vite(\.js)?/ && !/vitest/ && !/awk/ { print $1; next }
+              index($0, deploy_path) && /node([[:space:]]+.*)?vite(\.js)?/ && !/vite(\.js)?[[:space:]]+build([[:space:]]|$)/ && !/vitest/ && !/awk/ { print $1; next }
               # Keep stop scope limited to UI deploy path to avoid killing unrelated services that may auto-restart.
             ' | sort -u || true
+          }
+
+          # True when this process group contains the frontend production build.
+          # Signaling the group would SIGTERM `npm run build` (exit 143).
+          group_contains_frontend_build() {
+            local pgid="$1"
+
+            ps -axo pgid=,command= | awk -v pgid="$pgid" '
+              $1 == pgid && /vite(\.js)?[[:space:]]+build([[:space:]]|$)/ { found = 1 }
+              $1 == pgid && /npm([[:space:]]+run)?[[:space:]]+build([[:space:]]|$)/ { found = 1 }
+              END { exit found ? 0 : 1 }
+            '
           }
 
           # Kill the full server process tree so the npm wrapper and Node child both stop.
@@ -224,6 +247,10 @@ jobs:
               if [ -n "$all_pgids" ]; then
                 printf '%s\n' "$all_pgids" | while IFS= read -r pgid; do
                   [ -n "$pgid" ] || continue
+                  if group_contains_frontend_build "$pgid"; then
+                    echo "Skipping process group ${pgid}; it contains vite build or npm run build."
+                    continue
+                  fi
                   run_privileged kill "-${signal}" "-$pgid" 2>/dev/null || true
                 done
               fi
@@ -250,6 +277,10 @@ jobs:
               if [ -n "$all_pgids" ]; then
                 printf '%s\n' "$all_pgids" | while IFS= read -r pgid; do
                   [ -n "$pgid" ] || continue
+                  if group_contains_frontend_build "$pgid"; then
+                    echo "Skipping process group ${pgid}; it contains vite build or npm run build."
+                    continue
+                  fi
                   run_privileged kill "-${signal}" "-$pgid" 2>/dev/null || true
                 done
               fi
@@ -481,12 +512,13 @@ jobs:
           # This guards against the stop step missing a process that holds the port.
           # High-risk operation: this invokes the project stop script on the remote HOST service.
           npm run stop || true
+          # Bug fix: same exclusion as the stop step. `vite build` is not a leftover dev server.
           _leftover_pids="$(ps -eo pid,args | awk -v deploy_path="$deploy_path" '
             index($0, deploy_path) && /vue-cli-service(\.js)?[[:space:]]+serve/ && !/awk/ { print $1; next }
-            index($0, deploy_path) && /vite(\.js)?([[:space:]]|$)/ && !/vitest/ && !/awk/ { print $1; next }
+            index($0, deploy_path) && /vite(\.js)?([[:space:]]|$)/ && !/vite(\.js)?[[:space:]]+build([[:space:]]|$)/ && !/vitest/ && !/awk/ { print $1; next }
             index($0, deploy_path) && /npm([[:space:]]+run)?[[:space:]]+start/ && !/awk/ { print $1; next }
             index($0, deploy_path) && /node([[:space:]]+.*)?vue-cli-service(\.js)?[[:space:]]+serve/ && !/awk/ { print $1; next }
-            index($0, deploy_path) && /node([[:space:]]+.*)?vite(\.js)?/ && !/vitest/ && !/awk/ { print $1; next }
+            index($0, deploy_path) && /node([[:space:]]+.*)?vite(\.js)?/ && !/vite(\.js)?[[:space:]]+build([[:space:]]|$)/ && !/vitest/ && !/awk/ { print $1; next }
             # Keep stop scope limited to UI deploy path to avoid killing unrelated services that may auto-restart.
           ' | sort -u || true)"
           if [ -n "$_leftover_pids" ]; then
