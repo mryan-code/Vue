@@ -6,7 +6,7 @@ import APIClass from "@/classes/API";
 import { useAppStore } from "@/store/app";
 import { useRouter } from "vue-router";
 import * as types from "@/types";
-import { Mail, KeySquare, Check, X, Loader } from "@lucide/vue";
+import { Mail, KeySquare, Check, X, Loader, Lock } from "@lucide/vue";
 
 // // composables and classes
 const API = new APIClass();
@@ -18,11 +18,11 @@ const password = ref("");
 const loginMessages = ref([]);
 
 // // declare functions
-const loginSubmit = async (event) => {
+const loginSubmit = async (event: Event) => {
 	event.preventDefault();
 	await loginRequest(event);
 };
-const loginRequest = async (event) => {
+const loginRequest = async (event: Event) => {
 	event.preventDefault();
 	const userAgent: string | string[] = navigator.userAgent;
 	const IP: string | null = await API.getIP();
@@ -44,7 +44,7 @@ const loginRequest = async (event) => {
 		if (localStorage.getItem(appStore.loginTokenKey)) {
 			localStorage.removeItem(appStore.loginTokenKey);
 		}
-		localStorage.setItem(appStore.loginTokenKey, loginRequest.token);
+		localStorage.setItem(appStore.loginTokenKey, loginRequest.token as string);
 
 		appStore.authenticated = true;
 
@@ -53,7 +53,7 @@ const loginRequest = async (event) => {
 	} else {
 		// await appStore.buttonFeedback(buttonElement, false, false, true);
 		if (loginRequest.message && Array.isArray(loginRequest.message)) {
-			loginMessages.value = loginRequest.message as string[];
+			loginMessages.value = loginRequest.message as never[];
 		}
 	}
 };
@@ -77,9 +77,6 @@ onMounted(async () => {});
 					</div>
 				</div>
 				<div>
-					<h3 class="dialogueTitle">{{ appStore.loginDialogueMessage }}</h3>
-					<p v-if="appStore.loginDialogueError != ''">{{ appStore.loginDialogueError }}</p>
-
 					<v-card-text v-if="loginMessages.length > 0">
 						<div v-if="loginMessages.length > 0">
 							<p>Login Messages:</p>
