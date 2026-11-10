@@ -9,10 +9,10 @@ on:
 jobs:
   deploy:
     # Use DEPLOY_RUNNER repo variable (for example: self-hosted) when the target host is private-network only.
-    runs-on: 'ubuntu-latest'
+    runs-on: 'ubuntu-26.04'
     env:
       DEPLOY_HOST: 'dev-domain.duckdns.org'
-      DEPLOY_PORT: '22'
+      DEPLOY_PORT: '777'
       DEPLOY_USERNAME: 'inkt'
       DEPLOY_PATH: '~/Personal/Vue'
       API_PORT: '9876'
@@ -22,7 +22,7 @@ jobs:
     steps:
       # Download the repository files onto the GitHub runner runner
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Connect to HOST via SSH
       - name: Connect to HOST via SSH
